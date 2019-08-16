@@ -1,0 +1,58 @@
+from logicmachine import *
+from validators.data_validator import DataValidator
+from validators.data_label import DataLabel
+import enhanced_simple_tree_matching as estm
+import functools
+
+
+class TitleValidator(DataValidator):
+    hit_labels = [
+        'headline',
+        'title'
+    ]
+
+    def kill_check(self, node):
+        return False
+
+    def base_check(self, node):
+        text = DataValidator.flatten_text(node.text)
+        if estm.number_of_words(text) >= 10:
+            return False
+        if len(node.get_children()) > 1:
+            return False
+        return True
+
+    def hit_check(self, node):
+        return DataValidator.in_class_ids(node, TitleValidator.hit_labels)
+
+    def score_check(self, node):
+        # Preparations
+        score = 0
+        weights = [2, 3, 2, 2, 2]
+        max_value = functools.reduce((lambda x, y: x + y), weights)
+
+        # Condition 1: Contains more uppercase words
+        if not DataValidator.contains_more_lower_than(node, 0.5):
+            score += weights[0]
+
+        # Condition 2: Contains header
+        for tag in ['h', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
+            if node.has_tag(tag):
+                score += weights[1]
+                break
+
+        # Condition 3: Contains less than 10 words
+        if estm.number_of_words(DataValidator.flatten_text(node.text)) <= 10:
+            score += weights[2]
+            # Condition 4: Contains symbols - and :
+            if re.search('[:\-]+', DataValidator.flatten_text(node.text)):
+                score += weights[3]
+
+        # Condition 5: Contains a link node
+        if node.has_tag('a'):
+            score += weights[4]
+
+        return float(score) / float(max_value)
+
+    def get_label(self):
+        return DataLabel.TITLE
