@@ -16,7 +16,7 @@ class NoiseValidator(DataValidator):
         return True
 
     def hit_check(self, node):
-        ids_classes = [r'nav', r'menue', r'dropdown', r'footer']
+        ids_classes = [r'nav', r'menue', r'dropdown', r'footer', r'pre-headline']
         tags = ['option', 'nav', 'img', 'picture', 'figure', 'source', 'figure', 'img', 'i']
 
         # Checking whether defining regex are in class or id
@@ -31,7 +31,9 @@ class NoiseValidator(DataValidator):
         if node.type in tags:
             return True
 
-        if estm.number_of_words(DataValidator.flatten_text(node.text)) == 0 and node.type != 'a':
+        if estm.number_of_words(DataValidator.flatten_text(node.text)) == 0:
+            return True
+        if '©' in DataValidator.flatten_text(node.text):
             return True
 
         return False

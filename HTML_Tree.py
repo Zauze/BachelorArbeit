@@ -64,6 +64,8 @@ class HTMLNode:
         ]
 
         self.text = str(html_object.inner_html).replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t")
+        # Sometimes non closing nodes are not recognized and just included as text
+        self.text = re.sub('\<[a-z]+[^<>]*\>', '', self.text)
         self.type = html_object.tag_name
         self.attributes = html_object.attrs or {}
         self.level = level
@@ -90,9 +92,8 @@ class HTMLNode:
         self.depth = 0
         for child in self.get_children():
             child.calculate_depth()
-            if child.depth > self.depth:
-                self.depth = child.depth
-            self.depth += 1
+            if child.depth > self.depth - 1:
+                self.depth = child.depth + 1
 
     def add_child(self, child):
         """

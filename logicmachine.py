@@ -5,6 +5,7 @@ from validators.data_label import DataLabel
 from validators.noise_validator import *
 from validators.date_validator import *
 from validators.data_validator import *
+from validators.data_label import DataLabel
 from validators.time_validator import *
 from validators.location_validator import *
 from validators.long_desc_validator import *
@@ -192,7 +193,7 @@ def get_main_region_by_points(regions):
     for label in labels:
         max_values = []
         for region in regions:
-            if len(region.data_container['label_dict'][label]['scores']) > 0:
+            if label in region.data_container['label_dict'] and len(region.data_container['label_dict'][label]['scores']) > 0:
                 max_values.append(max(list(map(lambda x: x[0], region.data_container['label_dict'][label]['scores']))))
             else:
                 max_values.append(0)
@@ -201,7 +202,7 @@ def get_main_region_by_points(regions):
             if max_values[index] == max_value:
                 points[index] += 1
 
-    ret_list =[]
+    ret_list = []
     max_value = max(points)
     for index in range(len(points)):
         if points[index] == max_value:

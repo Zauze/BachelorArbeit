@@ -19,10 +19,13 @@ unallowed_tags = [
 unallowed_ids_classes = [
     'footer',
     'menu',
-    'option'
+    'option',
+    'cookie',
+    'navigation',
+    '_nav'
 ]
 
-MIN_REGION_DEPTH = 2
+MIN_REGION_DEPTH = 3
 MAX_REGION_DEPTH = 10
 MIN_INFORMATION_COUNT = 2
 
@@ -40,13 +43,11 @@ def validate_data_region(data_region_node):
     if validators.data_validator.DataValidator.in_class_ids(data_region_node, unallowed_ids_classes):
         return None
 
-    # Cleaning children
-    for child in data_region_node.get_children():
-        for tag in unallowed_tags:
-            child.remove_type(tag)
-        for id_class in unallowed_ids_classes:
-            child.remove_id(id_class)
-            child.remove_class(id_class)
+    for tag in unallowed_tags:
+        data_region_node.remove_type(tag)
+    for id_class in unallowed_ids_classes:
+        data_region_node.remove_id(id_class)
+        data_region_node.remove_class(id_class)
 
     # Information count check
     information_counts = []
@@ -78,5 +79,8 @@ def preprocess(node):
 
         node.remove_children(remove)
 
-    node.children = list(map(preprocess, node.children))
+    for child in node.get_children():
+        preprocess(child)
+    node.update()
     return node
+

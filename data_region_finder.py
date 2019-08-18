@@ -17,6 +17,9 @@ def combined_compare(parent, k):
     :return: dict: containing the calculated distances between nodes and
                    groupings
     """
+    # TODO: remove this
+    if parent.identification == 1481:
+        a = 10
     nodes = parent.get_children()
     distances = {}
     for i in range(1, k + 1):
@@ -39,8 +42,6 @@ def combined_compare(parent, k):
                         parent2 = HTML_Tree.HTMLNode('div', {}, None, 0)
                         parent1.children = parent.truncate_children(start-1, l-1)
                         parent2.children = parent.truncate_children(l-1, l+j-1)
-                        parent1.compute_text()
-                        parent2.compute_text()
                         result = estm.normalized_tree_distance(parent1, parent2, True)
 
                         distances[j][key] = result
@@ -115,6 +116,8 @@ def identify_data_regions(start, node, k, threshold):
            two nodes are can be seen as equal
     :return: list of dict : list containing id of a node and its data regions
     """
+    if node.identification == 18:
+        a = 10
     max_dr = [0, 0, 0]
     cur_dr = [0, 0, 0]
     for combination in range(1, k):
@@ -154,7 +157,7 @@ def uncovered_data_regions(parent, child):
         child.data_container['data_regions'] = []
     for dict in parent.data_container['data_regions']:
         data_region = dict[parent.identification]
-        if parent.get_children().index(child) in range(data_region[1] - 1, data_region[1] + data_region[2]):
+        if parent.get_children().index(child) in range(data_region[1], data_region[1] + data_region[2]):
             return []
     return child.data_container['data_regions']
 
@@ -170,15 +173,17 @@ def find_data_regions(node, k, threshold):
            two nodes are can be seen as equal
     :return: None
     """
+    if 'class' in node.attributes and node.attributes['class'] == 'article':
+        a = 10
     node.calculate_depth()
     node.data_container['data_regions'] = []
-    if node.depth >= validator.MIN_REGION_DEPTH:
+    if validator.MAX_REGION_DEPTH >= node.depth >= validator.MIN_REGION_DEPTH:
         node.data_container['data_regions'] = identify_data_regions(1, node, k, threshold)
-        temp_regions = []
-        for child in node.get_children():
-            find_data_regions(child, k, threshold)
-            temp_regions += uncovered_data_regions(node, child)
-        node.data_container['data_regions'] += temp_regions
+    temp_regions = []
+    for child in node.get_children():
+        find_data_regions(child, k, threshold)
+        temp_regions += uncovered_data_regions(node, child)
+    node.data_container['data_regions'] += temp_regions
 
 
 def extract_data_regions(node):

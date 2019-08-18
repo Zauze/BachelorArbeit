@@ -4,7 +4,9 @@ import re
 import sys
 import copy
 import logging
+import datetime
 from copy import deepcopy
+
 
 
 def number_of_words(text):
@@ -22,7 +24,8 @@ def lcs(text1, text2, sequence = ''):
     :param str text1:
     :param str text2:
     :param str sequence: previously found longest sequence
-    :return: str : longest common subsequence
+    :return: str : longest common sub sequence
+    """
     """
     check = ''
     for i in range(len(text1)):
@@ -36,6 +39,19 @@ def lcs(text1, text2, sequence = ''):
         return sequence
     else:
         return lcs(text1[1:len(text1)], text2, sequence)
+    """
+    for start in range(len(text1)):
+        check = ''
+        for i in range(start, len(text1)):
+            check += text1[i]
+            if check in text2:
+                if len(check) > len(sequence):
+                    sequence = check
+            else:
+                break
+        if len(sequence) > (len(text1) - start):
+            return sequence
+    return sequence
 
 
 def content_similarity(node1, node2):
@@ -46,9 +62,13 @@ def content_similarity(node1, node2):
     :return: float
     """
     if not node1.is_leaf() or not node2.is_leaf():
-        return 0
+        return 0.0
     else:
-        cs = lcs(node1.text, node2.text)
+        start = datetime.datetime.now()
+        cs = lcs(node1.get_pure_text(), node2.get_pure_text())
+        end = datetime.datetime.now()
+        diff =  end - start
+        print(str(diff))
         w = number_of_words(cs)
         m = max(
             number_of_words(node1.text),
@@ -79,14 +99,13 @@ def estm(node1, node2):
     else:
         matrix = numpy.zeros((m + 1,n + 1))
         wmatrix = numpy.zeros((m,n))
-
         for i in range(1, m + 1):
             for j in range(1, n + 1):
                 wmatrix[i-1][j-1] = estm(node1.get_children()[i-1], node2.get_children()[j-1])
                 matrix[i][j] = max(
                     matrix[i, j-1],
-                    matrix[i-1][j],
-                    matrix[i-1][j-1] + 1 + estm(node1.get_children()[i-1], node2.get_children()[j-1]))
+                    matrix[i-1, j],
+                    matrix[i-1, j-1] + 1 + estm(node1.get_children()[i-1], node2.get_children()[j-1]))
 
         if 'weight_matrices' not in node1.data_container:
             node1.data_container['weight_matrices'] = {}
@@ -100,7 +119,19 @@ def estm(node1, node2):
     return matrix[m][n] + 1 + content_similarity(node1, node2)
 
 
-def tree_alignment(tree1, tree2, calculate_estm = False):
+def get_max_string(tree1, tree2):
+    if number_of_words(tree1.get_pure_text()) > number_of_words(tree2.get_pure_text()):
+        tmp = tree1.children
+    else:
+        tmp = tree2.children
+    ret = []
+    for child in tmp:
+        if isinstance(child, str):
+            ret.append(child)
+    return ret
+
+
+def tree_alignment(tree1, tree2, calculate_estm = False, string_function=get_max_string):
     """
     Computes the intersection of two trees
     :param HTMLNode tree1:
@@ -116,6 +147,9 @@ def tree_alignment(tree1, tree2, calculate_estm = False):
     if 'class' in tree1.attributes and 'class' in tree2.attributes:
         if tree1.attributes['class'] != tree2.attributes['class']:
             return None
+    if ('class' not in tree1.attributes and 'class' in tree2.attributes) \
+        or ('class' in tree1.attributes and 'class' not in tree2.attributes):
+        return None
     if len(tree1.get_children()) == 0 and len(tree2.get_children()) == 0:
         return tree1
     if len(tree1.get_children()) == 0 or len(tree2.get_children()) == 0:
@@ -137,36 +171,54 @@ def tree_alignment(tree1, tree2, calculate_estm = False):
 
     max_indices = list()
     if m < n:
-        indices = numpy.argmax(wmatrix, axis=0)
-        for i in range(m):
-            max_indices.append((i, indices[i]))
-    else:
         indices = numpy.argmax(wmatrix, axis=1)
-        for i in range(n):
+        for i in range(m):
             max_indices.append((indices[i], i))
+    elif m == n:
+        tmp_y = numpy.argmax(wmatrix, axis=1)
+        ind_y = []
+        y = 0
+        for x in tmp_y:
+            ind_y.append((x,y))
+            y += 1
+        score_y = 0
+        for i in ind_y:
+            try:
+                score_y += wmatrix[i[1]][i[0]]
+            except:
+                a = 10
+
+        tmp_x = numpy.argmax(wmatrix, axis=0)
+        ind_x = []
+        x = 0
+        for y in tmp_x:
+            ind_x.append((x,y))
+            x += 1
+        score_x = 0
+        for i in ind_x:
+            score_x += wmatrix[i[1]][i[0]]
+
+        if score_y > score_x:
+            max_indices = ind_y
+        else:
+            max_indices = ind_x
+    else:
+        indices = numpy.argmax(wmatrix, axis=0)
+        for i in range(n):
+            max_indices.append((i, indices[i]))
 
     children = []
     for t in max_indices:
         x = t[0]
         y = t[1]
-        if wmatrix[x][y] == 0:
+        if wmatrix[y][x] == 0:
             continue
-        if m < n:
-            alignment = tree_alignment(tree1.get_children()[x], tree2.get_children()[y])
-        else:
-            alignment = tree_alignment(tree1.get_children()[y], tree2.get_children()[x])
+        alignment = tree_alignment(tree1.get_children()[y], tree2.get_children()[x])
 
         if alignment is not None:
             children.append(alignment)
-    # Adding text nodes if included in the other tree
-    if number_of_words(tree1.get_pure_text()) > number_of_words(tree2.get_pure_text()):
-        tmp = tree1.children
-    else:
-        tmp = tree2.children
-    for child in tmp:
-        if isinstance(child, str):
-            children.append(child)
-    tree1.children = children
+    str_list = string_function(tree1, tree2)
+    tree1.children = children + str_list
     return tree1
 
 
@@ -180,7 +232,8 @@ def terminal(tree, count_pictures=True):
     count = 0
     if count_pictures and tree.type == 'picture' or tree.type == 'img':
         count += 1
-    if tree.has_text() is not None and len(tree.text) > 0:
+    # TODO: check if this is working
+    if tree.has_text() is not None and re.search('\w+', tree.get_pure_text()) is not None:
         for child in tree.children:
             if isinstance(child, str):
                 count += 1
@@ -188,6 +241,41 @@ def terminal(tree, count_pictures=True):
     for child in tree.get_children():
         count += terminal(child)
     return count
+
+def tree_structure_points(node, n=0):
+    """
+    A self developed structure analysis algorithm.
+    Returns the subtree score of a given root
+    :param HTMLNode node:
+    :param int n: the exponent
+    :return: float
+    """
+    # Those are tags will not be counted
+    ignore_tags = [
+        'p',
+        'strong',
+        'abbr',
+        'b',
+        'i',
+        'em',
+        'mark',
+        'small',
+        'del',
+        'ins',
+        'sub',
+        'sup',
+        'img'
+    ]
+
+    score = 0.0
+    if node.type not in ignore_tags:
+        score += 2**n
+        n -= 1
+
+    for child in node.get_children():
+        score += tree_structure_points(child, n)
+
+    return score
 
 
 def normalized_tree_distance(tree1, tree2, artificial_root=False):
@@ -208,10 +296,20 @@ def normalized_tree_distance(tree1, tree2, artificial_root=False):
         if aligned_tree.is_leaf():
             return 1.0
     aligned_tree.compute_text()
-    matched = terminal(aligned_tree)
-    max_val = max(terminal(tree1), terminal(tree2))
+    #matched = terminal(aligned_tree)
+    #max_val = max(terminal(tree1), terminal(tree2))
 
-    # TODO: what if matched = 0 and max_val = 0 although aligned tree is not only the artifical?
-    if max_val == 0:
-        return 1.0
-    return 1.0 - (float(matched)/float(max_val))
+    aligned_score = tree_structure_points(aligned_tree, 1) - 2
+    max_score = max(tree_structure_points(tree1, 1) - 2, tree_structure_points(tree2, 1) - 2)
+
+    #if max_val == 0:
+    #    word_score = 1.0
+    #else:
+    #    word_score = 1.0 - (float(matched)/float(max_val))
+
+    if max_score == 0:
+        structure_val = 1.0
+    else:
+        structure_val = 1.0 - (aligned_score/max_score)
+
+    return structure_val

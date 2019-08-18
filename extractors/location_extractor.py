@@ -8,7 +8,7 @@ from validators.data_label import DataLabel
 class LocationExtractor(ex.data_extractor.DataExtractor):
 
     def extract(self, node):
-        for label in [DataLabel.DATE, DataLabel.TIME]:
+        for label in [DataLabel.DATE, DataLabel.TIME, DataLabel.TITLE]:
             if label in node.data_container['label']['hits']:
                 return {
                     'location': None

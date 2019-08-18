@@ -16,7 +16,7 @@ class TitleValidator(DataValidator):
 
     def base_check(self, node):
         text = DataValidator.flatten_text(node.text)
-        if estm.number_of_words(text) >= 10:
+        if estm.number_of_words(text) >= 15:
             return False
         if len(node.get_children()) > 1:
             return False

@@ -10,13 +10,14 @@ import errors.errors
 import data_region_finder
 import logging
 import sys
+sys.setrecursionlimit(1000000000)
 
 # Important constants and variables
 # This content defines the maximal amount of nodes
 # to join as data record
 K_VALUE = 5
 # A max value for deciding whether two nodes will be seen as equal
-THRESHOLD = 0.4
+THRESHOLD = 0.2
 
 # Creating the logger
 handler = logging.StreamHandler(sys.stdout)
@@ -26,7 +27,9 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(handler)
 
 # TODO: Getting website from command line
-website = 'https://www.bermatingen.de/index.php?id=20&no_cache=1'
+website = 'https://grafing.de/index.php?id=0,17'
+website = 'https://veranstaltungen.meinestadt.de/salem-baden'
+#website = 'https://www.bermatingen.de/index.php?id=20&no_cache=1'
 
 # Trying to request website and getting the raw html code
 try:
@@ -36,7 +39,7 @@ except urllib.error.URLError as e:
     raise e
 source = response.read()
 # TODO: remove this
-# source = open('html.html').read()
+source = open('html.html', 'r', encoding='utf-8').read()
 
 # Transforming the raw html string into a dom tree
 dom_parser = parser.DOMParser()
@@ -71,14 +74,20 @@ remove_list = []
 for region in data_regions:
     if not validator.validate_data_region(region):
         remove_list.append(region)
-map(lambda x: data_regions.remove(x), remove_list)
+    else:
+        region.update()
+for el in remove_list:
+    data_regions.remove(el)
 
 # Getting the main data region
 main_region = logicmachine.process_data_regions(data_regions)
-# TODO: align data regions, which are similar to the main_region
 
 # Extract the information from the data records
 information_list = DataExtractor.extract_data_records(main_region)
 
 # TODO: continue here
 raise NotImplementedError('Code not implemented yet')
+
+# grafing, tutzing, ebersberg, starnberg, bermatingen, allgäu, tvkempten, salem
+# working: ebersberg, bermatingen, allgäu, tvkempten, salem
+# not-working: grafing, salem
