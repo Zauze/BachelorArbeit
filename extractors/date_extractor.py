@@ -10,6 +10,8 @@ class DateExtractor(DataExtractor):
     Extractor class for date
     """
     def extract(self, node):
+        if node.identification == 369:
+            a = 10
         text = DataValidator.flatten_text(node.text)
         date_info = {
           'day': None,
@@ -36,7 +38,7 @@ class DateExtractor(DataExtractor):
                 raise errors.errors.NotFoundError('Month was not found while date extraction')
             date_info['month'] = month
             if re.search('^[\s:.\-]+(2[0-9]{3}|[0-1]{1}[0-9]{1})(\s+|$)', match[0][3]):
-                match_year = re.findall('^[\s:.\-]+(2[0-9]{3}|[0-1]{1}[0-9]{1})(\s+|$)', match[0][3])[0]
+                match_year = re.findall('^[\s:.\-]+(2[0-9]{3}|[0-1]{1}[0-9]{1})(\s+|$)', match[0][3])[0][0]
         else:
             for child in node.get_children():
                 if 'class' in child.attributes:
@@ -50,7 +52,10 @@ class DateExtractor(DataExtractor):
         if match_year is None:
             date_info['year'] = datetime.datetime.now().year
         elif len(match_year) == 2:
-            date_info['year'] = '20' + match_year
+            try:
+                date_info['year'] = '20' + match_year
+            except:
+                a = 10
         elif len(match_year) == 4:
             date_info['year'] = match_year
         else:

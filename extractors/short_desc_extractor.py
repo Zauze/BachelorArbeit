@@ -9,10 +9,8 @@ class ShortDescExtractor(DataExtractor):
     """
     def extract(self, node):
         for label in [DataLabel.DATE, DataLabel.TIME, DataLabel.TITLE]:
-            if label in node.data_container['label']['hits']:
-                return {
-                    'location': None
-                }
+            if DataExtractor.is_hit(node, label):
+                return None
         text = DataValidator.flatten_text(node.text)
         return {
             'short_description': self.remove_extra_whitespaces(text).strip()

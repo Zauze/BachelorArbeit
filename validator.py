@@ -22,11 +22,12 @@ unallowed_ids_classes = [
     'option',
     'cookie',
     'navigation',
-    '_nav'
+    '_nav',
+    'pre-headline'
 ]
 
 MIN_REGION_DEPTH = 3
-MAX_REGION_DEPTH = 10
+MAX_REGION_DEPTH = 13
 MIN_INFORMATION_COUNT = 2
 
 # Function for validating data_regions

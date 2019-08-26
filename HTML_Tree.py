@@ -63,7 +63,7 @@ class HTMLNode:
             dom.HTMLComment
         ]
 
-        self.text = str(html_object.inner_html).replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t")
+        self.text = html_object.inner_html
         # Sometimes non closing nodes are not recognized and just included as text
         self.text = re.sub('\<[a-z]+[^<>]*\>', '', self.text)
         self.type = html_object.tag_name
@@ -313,3 +313,31 @@ class HTMLNode:
         for child in self.get_children():
             child.parent = self
             child.update()
+
+    def get_path(self, stop=None):
+        """
+        Function that retrieves the path from this node to the node with the ID stop.
+        If stop not specified, the root node will be used, if stop not found, None will be
+        returned
+        :param stop: id of the wanted root (else as root will be regarded the
+                     node which does not have a parent)
+        :return: str or None
+        """
+        # Getting the class
+        node_class = None
+        if 'class' in self.attributes:
+            node_class = self.attributes['class']
+
+        # Path is calculated with tag and class if any
+        path = [(self.type, node_class)]
+
+        if self.identification == stop or (self.parent is None and stop is None):
+            return path
+        elif self.parent is None:
+            return None
+        else:
+            ret = self.parent.get_path(stop)
+            if ret is None:
+                return None
+            else:
+                return ret + path

@@ -16,7 +16,7 @@ class NoiseValidator(DataValidator):
         return True
 
     def hit_check(self, node):
-        ids_classes = [r'nav', r'menue', r'dropdown', r'footer', r'pre-headline']
+        ids_classes = [r'nav', r'menue', r'dropdown', r'footer', r'pre-headline', r'(^|\s+)btn(\s+|$)', ]
         tags = ['option', 'nav', 'img', 'picture', 'figure', 'source', 'figure', 'img', 'i']
 
         # Checking whether defining regex are in class or id

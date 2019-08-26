@@ -17,8 +17,7 @@ def combined_compare(parent, k):
     :return: dict: containing the calculated distances between nodes and
                    groupings
     """
-    # TODO: remove this
-    if parent.identification == 1481:
+    if parent.identification == 159:
         a = 10
     nodes = parent.get_children()
     distances = {}
@@ -116,8 +115,6 @@ def identify_data_regions(start, node, k, threshold):
            two nodes are can be seen as equal
     :return: list of dict : list containing id of a node and its data regions
     """
-    if node.identification == 18:
-        a = 10
     max_dr = [0, 0, 0]
     cur_dr = [0, 0, 0]
     for combination in range(1, k):
@@ -173,8 +170,6 @@ def find_data_regions(node, k, threshold):
            two nodes are can be seen as equal
     :return: None
     """
-    if 'class' in node.attributes and node.attributes['class'] == 'article':
-        a = 10
     node.calculate_depth()
     node.data_container['data_regions'] = []
     if validator.MAX_REGION_DEPTH >= node.depth >= validator.MIN_REGION_DEPTH:

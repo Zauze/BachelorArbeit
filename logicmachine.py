@@ -20,6 +20,14 @@ from HTML_Tree import HTMLNode
 # modified depth: depth counted up if the current node is not a simplified type
 # (like strong etc.)
 MAX_HEIGHT = 1
+LABELS = [
+        DataLabel.TIME,
+        DataLabel.DATE,
+        DataLabel.TITLE,
+        DataLabel.SHORT_DESC,
+        DataLabel.LINK,
+        DataLabel.LOCATION,
+    ]
 
 
 def run_validation(node, n, label_dict):
@@ -82,7 +90,9 @@ def run_validation(node, n, label_dict):
             else:
                 node.data_container['label']['not'].append(obj.get_label())
     if node.parent is not None:
-        if node.type in ['p', 'strong']:
+        if node.type in ['div', 'td', 'tr']:
+            run_validation(node.parent, n + 1, label_dict)
+        elif node.type in ['p', 'strong'] or estm.number_of_words(node.get_pure_text()) > 0:
             run_validation(node.parent, n, label_dict)
         else:
             run_validation(node.parent, n+1, label_dict)
@@ -128,7 +138,10 @@ def process_data_regions(data_regions):
             main_region = regions_list[0]
         else:
             # Creating a merged data_region
-            main_region = regions_list[0]
+            try:
+                main_region = regions_list[0]
+            except:
+                a = 10
             for index in range(1, len(regions_list)):
                 main_region.children += regions_list[index].children
                 # merge_data_regions(main_region, regions_list[index])
@@ -181,29 +194,28 @@ def get_main_region_by_points(regions):
     :param list of HTMLNode regions: the regions to inspect
     :return: list of HTMLNode
     """
-    labels = [
-        DataLabel.LINK,
-        DataLabel.LOCATION,
-        DataLabel.SHORT_DESC,
-        DataLabel.TIME,
-        DataLabel.DATE,
-        DataLabel.TITLE
-    ]
     points = [0] * len(regions)
-    for label in labels:
+    for label in LABELS:
         max_values = []
         for region in regions:
             if label in region.data_container['label_dict'] and len(region.data_container['label_dict'][label]['scores']) > 0:
                 max_values.append(max(list(map(lambda x: x[0], region.data_container['label_dict'][label]['scores']))))
             else:
                 max_values.append(0)
-        max_value = max(max_values)
+
+        if len(max_values) == 0:
+            max_value = 0
+        else:
+            max_value = max(max_values)
         for index in range(0, len(max_values)):
             if max_values[index] == max_value:
                 points[index] += 1
 
     ret_list = []
-    max_value = max(points)
+    if len(points) == 0:
+        max_value = 0
+    else:
+        max_value = max(points)
     for index in range(len(points)):
         if points[index] == max_value:
             ret_list.append(regions[index])
@@ -245,3 +257,81 @@ def process_hits(label_dict):
                     remove_list.append(node)
             for el in remove_list:
                 label_dict[label]['hits'].remove(el)
+
+
+def check_paths(main_region, label):
+    """
+    Collects paths from data record root to information node based on their
+    hits or scores and check for similarities. The combination of path and label
+    which is the highest for each label will be granted with a score of 2 (therefore
+    later will be prefered for extraction).
+    :param main_region:
+    :return: None
+    """
+    paths = dict()
+    candidates = []
+    for record in main_region.get_children():
+        # Retrieving the candidate nodes - those are either the hits or
+        # the ones with highest score for the given label
+        if len(record.data_container['label_dict'][label]['hits']) > 0:
+            candidates += record.data_container['label_dict'][label]['hits']
+        else:
+            val_list = list(map(lambda x: x[0], record.data_container['label_dict'][label]['scores']))
+            if len(val_list) == 0:
+                continue
+            max_val = max(val_list)
+            for tup in record.data_container['label_dict'][label]['scores']:
+                if tup[0] is not max_val:
+                    continue
+                else:
+                    candidates.append(tup[1])
+
+    # Getting paths and counting their occurrences
+    for candidate in candidates:
+        path = candidate.get_path(main_region.identification)
+        path_str = str(path)
+        if path_str in paths.keys():
+            paths[path_str] += 1
+        else:
+            paths[path_str] = 1
+
+    # Checking if there are multiple elements with maximum value
+    val_list = list(map(lambda x: x, paths.values()))
+    if len(val_list) > 0:
+        max_val = max(val_list)
+    else:
+        max_val = 0
+    found = False
+    max_path = None
+    for path in paths:
+        if paths[path] == max_val and not found:
+            found = True
+            max_path = path
+        elif paths[path] == max_val:
+            max_path = None
+            break
+
+    # Adjusting values of score nodes if max_path is not None
+    # Else doing nothing
+    if max_path is not None:
+        for record in main_region.get_children():
+            ind = 0
+            matching_ind = []
+            for tp in record.data_container['label_dict'][label]['scores']:
+                if str(tp[1].get_path(main_region.identification)) == max_path:
+                    matching_ind.append(ind)
+                ind += 1
+            for i in matching_ind:
+                node = record.data_container['label_dict'][label]['scores'][i][1]
+                record.data_container['label_dict'][label]['scores'][i] = (2, node)
+
+
+
+
+
+
+
+
+
+
+

@@ -27,6 +27,8 @@ class ShortDescValidator(DataValidator):
         for tag in ['span', 'div']:
             if node.has_tag(tag):
                 found = True
+        if estm.number_of_words(DataValidator.flatten_text(node.text)) > 15:
+            found = True
         return found
 
     def hit_check(self, node):

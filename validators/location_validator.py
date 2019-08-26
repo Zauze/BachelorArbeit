@@ -23,9 +23,13 @@ class LocationValidator(DataValidator):
         text = DataValidator.flatten_text(node.text)
         if estm.number_of_words(text) > 10:
             return True
+        if re.search('[\/?!]', text):
+            return True
         return False
 
     def base_check(self, node):
+        if node.identification == 338:
+            a = 10
         # Checking the cases
         if DataValidator.contains_more_lower_than(node, (1.0/3.0)):
             return False
@@ -73,6 +77,8 @@ class LocationValidator(DataValidator):
         # Condition 4: Contains less than 11 words
         if estm.number_of_words(text) <= 10:
             score += weights[3]
+
+
 
         return float(score) / float(max_value)
 

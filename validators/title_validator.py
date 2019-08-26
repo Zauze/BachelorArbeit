@@ -16,7 +16,7 @@ class TitleValidator(DataValidator):
 
     def base_check(self, node):
         text = DataValidator.flatten_text(node.text)
-        if estm.number_of_words(text) >= 15:
+        if estm.number_of_words(text) > 15:
             return False
         if len(node.get_children()) > 1:
             return False
@@ -28,7 +28,7 @@ class TitleValidator(DataValidator):
     def score_check(self, node):
         # Preparations
         score = 0
-        weights = [2, 3, 2, 2, 2]
+        weights = [2, 3, 2, 2, 2, 1]
         max_value = functools.reduce((lambda x, y: x + y), weights)
 
         # Condition 1: Contains more uppercase words
@@ -51,6 +51,10 @@ class TitleValidator(DataValidator):
         # Condition 5: Contains a link node
         if node.has_tag('a'):
             score += weights[4]
+
+        # Condition 6: Contains no numbers or slashes
+        if re.search('[0-9\/]+', DataValidator.flatten_text(node.text)) is None:
+            score += weights[5]
 
         return float(score) / float(max_value)
 

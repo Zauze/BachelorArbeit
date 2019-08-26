@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 from easyhtml import parser
 from extractors.data_extractor import DataExtractor
 from HTML_Tree import HTMLNode
@@ -29,7 +30,12 @@ logger.addHandler(handler)
 # TODO: Getting website from command line
 website = 'https://grafing.de/index.php?id=0,17'
 website = 'https://veranstaltungen.meinestadt.de/salem-baden'
-#website = 'https://www.bermatingen.de/index.php?id=20&no_cache=1'
+website = 'https://www.ueberlingen-bodensee.de/ueberlingen/event/search?reset=1'
+
+
+website = 'https://www.mainau.de/de/veranstaltungskalender.html'
+
+
 
 # Trying to request website and getting the raw html code
 try:
@@ -37,7 +43,9 @@ try:
 except urllib.error.URLError as e:
     logger.error('Page:"%s" was not found' % website)
     raise e
-source = response.read()
+# decoding for every language
+source = response.read().decode('latin-1')
+
 # TODO: remove this
 source = open('html.html', 'r', encoding='utf-8').read()
 
@@ -88,6 +96,6 @@ information_list = DataExtractor.extract_data_records(main_region)
 # TODO: continue here
 raise NotImplementedError('Code not implemented yet')
 
-# grafing, tutzing, ebersberg, starnberg, bermatingen, allg√§u, tvkempten, salem
-# working: ebersberg, bermatingen, allg√§u, tvkempten, salem
+# grafing, tutzing, ebersberg, starnberg, bermatingen, allg‰u, tvkempten, salem
+# working: ebersberg, bermatingen, allg‰u, tvkempten, salem, grafing, herrsching, tettnang
 # not-working: grafing, salem

@@ -70,6 +70,8 @@ class DateValidator(DataValidator):
         return True
 
     def hit_check(self, node):
+        if node.type in ['time']:
+            return True
         return DataValidator.in_class_ids(node, DateValidator.hit_labels)
 
     def score_check(self, node):

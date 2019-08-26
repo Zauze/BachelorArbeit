@@ -131,17 +131,17 @@ def get_max_string(tree1, tree2):
     return ret
 
 
-def tree_alignment(tree1, tree2, calculate_estm = False, string_function=get_max_string):
+def tree_alignment(tree_one, tree_two, calculate_estm = False, string_function=get_max_string):
     """
     Computes the intersection of two trees
-    :param HTMLNode tree1:
-    :param HTMLNode tree2:
+    :param HTMLNode tree_one:
+    :param HTMLNode tree_two:
     :param bool calculate_estm: Calculates the score for enhanced simple
                                 tree matching algorithm if set to True
     :return: HTMLNode : the aligned tree
     """
-    tree1 = copy.copy(tree1)
-    tree2 = copy.copy(tree2)
+    tree1 = copy.copy(tree_one)
+    tree2 = copy.copy(tree_two)
     if tree1.type != tree2.type:
         return None
     if 'class' in tree1.attributes and 'class' in tree2.attributes:
@@ -169,30 +169,51 @@ def tree_alignment(tree1, tree2, calculate_estm = False, string_function=get_max
         estm(tree1, tree2)
         wmatrix = tree1.data_container['weight_matrices'][tree2.identification]
 
+    alignments = assign_alignment(tree1.get_children(), tree2.get_children(), wmatrix, m, n)
+
+    children = []
+    for pair in alignments:
+        alignment = tree_alignment(pair[0], pair[1])
+        if alignment is not None:
+            children.append(alignment)
+
+    str_list = string_function(tree1, tree2)
+    tree1.children = children + str_list
+    return tree1
+
+
+# TODO: implement or remove
+def assign_alignment(children1, children2, wmatrix, m, n):
+    """
+
+    :param tree1:
+    :param tree2:
+    :param wmatrix:
+    :param m:
+    :param n:
+    :return:
+    """
+    alignments = []
     max_indices = list()
     if m < n:
         indices = numpy.argmax(wmatrix, axis=1)
         for i in range(m):
-            max_indices.append((indices[i], i))
+            max_indices.append((indices[i], i, wmatrix[i][indices[i]]))
     elif m == n:
         tmp_y = numpy.argmax(wmatrix, axis=1)
         ind_y = []
         y = 0
         for x in tmp_y:
-            ind_y.append((x,y))
+            ind_y.append((x, y, wmatrix[y][x]))
             y += 1
         score_y = 0
         for i in ind_y:
-            try:
-                score_y += wmatrix[i[1]][i[0]]
-            except:
-                a = 10
-
+            score_y += wmatrix[i[1]][i[0]]
         tmp_x = numpy.argmax(wmatrix, axis=0)
         ind_x = []
         x = 0
         for y in tmp_x:
-            ind_x.append((x,y))
+            ind_x.append((x, y, wmatrix[y][x]))
             x += 1
         score_x = 0
         for i in ind_x:
@@ -205,22 +226,22 @@ def tree_alignment(tree1, tree2, calculate_estm = False, string_function=get_max
     else:
         indices = numpy.argmax(wmatrix, axis=0)
         for i in range(n):
-            max_indices.append((i, indices[i]))
+            try:
+                max_indices.append((i, indices[i], wmatrix[indices[i]][i]))
+            except:
+                a = 10
 
-    children = []
-    for t in max_indices:
-        x = t[0]
-        y = t[1]
-        if wmatrix[y][x] == 0:
-            continue
-        alignment = tree_alignment(tree1.get_children()[y], tree2.get_children()[x])
-
-        if alignment is not None:
-            children.append(alignment)
-    str_list = string_function(tree1, tree2)
-    tree1.children = children + str_list
-    return tree1
-
+    value_list = list(map(lambda x: x[2], max_indices))
+    index = value_list.index(max(value_list))
+    tup = max_indices[index]
+    alignments.append((children1[tup[1]], children2[tup[0]]))
+    children1.remove(children1[tup[1]])
+    children2.remove(children2[tup[0]])
+    if len(value_list) > 1:
+        wmatrix = numpy.delete(wmatrix, tup[0], 1)
+        wmatrix = numpy.delete(wmatrix, tup[1], 0)
+        alignments += assign_alignment(children1, children2, wmatrix, m-1, n-1)
+    return alignments
 
 def terminal(tree, count_pictures=True):
     """
@@ -291,6 +312,8 @@ def normalized_tree_distance(tree1, tree2, artificial_root=False):
     """
     tree1.update()
     tree2.update()
+    if tree1.identification == 1093:
+        a = 10
     aligned_tree = tree_alignment(tree1, tree2)
     if artificial_root:
         if aligned_tree.is_leaf():
