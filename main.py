@@ -33,7 +33,7 @@ website = 'https://veranstaltungen.meinestadt.de/salem-baden'
 website = 'https://www.ueberlingen-bodensee.de/ueberlingen/event/search?reset=1'
 
 
-website = 'https://www.mainau.de/de/veranstaltungskalender.html'
+website = 'https://www.allgaeu.de/veranstaltung-allgaeu'
 
 
 
@@ -47,7 +47,7 @@ except urllib.error.URLError as e:
 source = response.read().decode('latin-1')
 
 # TODO: remove this
-source = open('html.html', 'r', encoding='utf-8').read()
+#source = open('html.html', 'r', encoding='utf-8').read()
 
 # Transforming the raw html string into a dom tree
 dom_parser = parser.DOMParser()
@@ -99,3 +99,5 @@ raise NotImplementedError('Code not implemented yet')
 # grafing, tutzing, ebersberg, starnberg, bermatingen, allgäu, tvkempten, salem
 # working: ebersberg, bermatingen, allgäu, tvkempten, salem, grafing, herrsching, tettnang
 # not-working: grafing, salem
+
+# wasserburg hat nicht alle Informationen (zB location fehlen ein paar)

@@ -11,7 +11,9 @@ class LocationValidator(DataValidator):
         '_loc',
         'location',
         'ort',
-        'place'
+        'place',
+        'stadt',
+        'city'
     ]
 
     key_words = [
@@ -28,8 +30,6 @@ class LocationValidator(DataValidator):
         return False
 
     def base_check(self, node):
-        if node.identification == 338:
-            a = 10
         # Checking the cases
         if DataValidator.contains_more_lower_than(node, (1.0/3.0)):
             return False

@@ -100,11 +100,11 @@ class DataExtractor:
                 return el[1]
 
     @staticmethod
-    def is_hit(node, label):
+    def is_hit(node, label, n=2):
         if 'label' in node.data_container:
             if label in node.data_container['label']['hits']:
                 return True
         else:
             return False
 
-        return DataExtractor.is_hit(node.parent, label)
+        return DataExtractor.is_hit(node.parent, label, n-1)

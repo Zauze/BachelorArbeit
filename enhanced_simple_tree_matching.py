@@ -169,32 +169,42 @@ def tree_alignment(tree_one, tree_two, calculate_estm = False, string_function=g
         estm(tree1, tree2)
         wmatrix = tree1.data_container['weight_matrices'][tree2.identification]
 
+    # Gets the alignment instructions
     alignments = assign_alignment(tree1.get_children(), tree2.get_children(), wmatrix, m, n)
 
     children = []
     for pair in alignments:
+        # Performs alignments
         alignment = tree_alignment(pair[0], pair[1])
         if alignment is not None:
             children.append(alignment)
-
+    # Aligns strings using the specific string alignment function provided
     str_list = string_function(tree1, tree2)
     tree1.children = children + str_list
     return tree1
 
 
 # TODO: implement or remove
-def assign_alignment(children1, children2, wmatrix, m, n):
+def assign_alignment(children1, children2, wmatrix):
     """
-
-    :param tree1:
-    :param tree2:
-    :param wmatrix:
-    :param m:
-    :param n:
-    :return:
+    Assigns the best match of children nodes from one tree to
+    the children nodes from another tree. Uses the before calculated
+    wmatrix and performs the match recursively.
+    :param list of HTMLNode children1: the children nodes from the first tree
+    :param list of HTMLNode children2: the children nodes from the second tree
+    :param array wmatrix:
+    :return: list of tuple : the alignment instructions
     """
     alignments = []
     max_indices = list()
+    m = len(children1)
+    n = len(children2)
+    # Firstly, getting the coordinates of the maximum
+    # numbers in the wmatrix.
+    # To find the best choices of children,
+    # the algorithm will be oriented on the tree with lesser children
+    # else if both children size is equal, the tree is regarded main, which
+    # has a higher count of maximum coordinates
     if m < n:
         indices = numpy.argmax(wmatrix, axis=1)
         for i in range(m):
@@ -226,21 +236,25 @@ def assign_alignment(children1, children2, wmatrix, m, n):
     else:
         indices = numpy.argmax(wmatrix, axis=0)
         for i in range(n):
-            try:
-                max_indices.append((i, indices[i], wmatrix[indices[i]][i]))
-            except:
-                a = 10
-
+            max_indices.append((i, indices[i], wmatrix[indices[i]][i]))
+    # Getting a list of all values from the maximum coordinates
     value_list = list(map(lambda x: x[2], max_indices))
+    # Getting the highest value of all max values
     index = value_list.index(max(value_list))
     tup = max_indices[index]
+    # append the alignment instruction to the list
     alignments.append((children1[tup[1]], children2[tup[0]]))
+    # The two children won't be considered anymore since,
+    # it can be that multiple children maximally match to one children
+    # from the other tree
     children1.remove(children1[tup[1]])
     children2.remove(children2[tup[0]])
+    # Deleting the row and column from the wmatrix
     if len(value_list) > 1:
         wmatrix = numpy.delete(wmatrix, tup[0], 1)
         wmatrix = numpy.delete(wmatrix, tup[1], 0)
-        alignments += assign_alignment(children1, children2, wmatrix, m-1, n-1)
+        # Running the algorithm recursively
+        alignments += assign_alignment(children1, children2, wmatrix)
     return alignments
 
 def terminal(tree, count_pictures=True):

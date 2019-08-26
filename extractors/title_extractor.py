@@ -9,9 +9,10 @@ class TitleExtractor(DataExtractor):
     Extractor class for title
     """
     def extract(self, node):
-        for label in [DataLabel.DATE, DataLabel.TIME]:
-            if DataExtractor.is_hit(node, label):
-                return None
+        if DataLabel.TITLE not in node.data_container['label']['hits']:
+            for label in [DataLabel.DATE, DataLabel.TIME]:
+                if DataExtractor.is_hit(node, label):
+                    return None
 
         text = DataValidator.flatten_text(node.text)
         return {

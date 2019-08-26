@@ -20,9 +20,15 @@ class TimeExtractor(DataExtractor):
             'minutes': None
         }
         # Those regex are very strict, no checks needed when extracting
+        # Matches strings like 19:15, 12:00, 09:23
         reg_full_time = r'(\s+|^)(([0-1]{1}[0-9]{1}|2[0-4]{1})[:]+([0-5]{1}[0-9]{1}))(\s+|$)'
+        # Matches strings like 18:12 uhr
         reg_part_time = r'(\s+|^)(0?[0-9]{1}|1[0-9]{1}|2[0-4]{1})([:](0[0-9]{1}|[1-5]{1}[0-9]{1})|\s*)' \
                         r'\s+uhr'
+        # Matches strings like 12 - 19 uhr, 23 bis 2 uhr
+        re_part_time_hours = r'(\s+|^)([01]{1}[0-9]{1}|2[0-4]{1})\s*([-:]{1}|bis)\s*' \
+                             r'([01]{1}[0-9]{1}|2[0-4]{1})\s+uhr'
+        # Matches 00 to 59
         reg_optional_minutes = r'^\s+([0-5]{1}[0-9]{1})(\s+|$)'
 
         # Those regex are much more loose and additional checks
@@ -32,8 +38,10 @@ class TimeExtractor(DataExtractor):
             match = re.findall(reg_full_time, text)
             ret_info['hour'] = match[0][2]
             ret_info['minutes'] = match[0][3]
-        # TODO: matching times like 9 -18 Uhr (so far only 18 Uhr is matched)
-        #       or 9:32 - 18:12 Uhr
+        elif re.search(re_part_time_hours, text.lower()) is not None:
+            match = re.findall(re_part_time_hours, text.lower())
+            ret_info['hour'] = match[0][1]
+            ret_info['minutes'] = '00'
         elif re.search(reg_part_time, text.lower()) is not None:
             match = re.findall(reg_part_time, text.lower())
             ret_info['hour'] = match[0][1]

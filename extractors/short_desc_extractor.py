@@ -8,9 +8,11 @@ class ShortDescExtractor(DataExtractor):
     Extractor class for short descriptions
     """
     def extract(self, node):
-        for label in [DataLabel.DATE, DataLabel.TIME, DataLabel.TITLE]:
-            if DataExtractor.is_hit(node, label):
-                return None
+        if DataLabel.SHORT_DESC not in node.data_container['label']['hits']:
+            for label in [DataLabel.DATE, DataLabel.TIME, DataLabel.TITLE]:
+                if DataExtractor.is_hit(node, label):
+                    return None
+
         text = DataValidator.flatten_text(node.text)
         return {
             'short_description': self.remove_extra_whitespaces(text).strip()
