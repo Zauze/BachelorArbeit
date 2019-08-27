@@ -170,7 +170,7 @@ def tree_alignment(tree_one, tree_two, calculate_estm = False, string_function=g
         wmatrix = tree1.data_container['weight_matrices'][tree2.identification]
 
     # Gets the alignment instructions
-    alignments = assign_alignment(tree1.get_children(), tree2.get_children(), wmatrix, m, n)
+    alignments = assign_alignment(tree1.get_children(), tree2.get_children(), wmatrix)
 
     children = []
     for pair in alignments:
@@ -348,5 +348,5 @@ def normalized_tree_distance(tree1, tree2, artificial_root=False):
         structure_val = 1.0
     else:
         structure_val = 1.0 - (aligned_score/max_score)
-
     return structure_val
+

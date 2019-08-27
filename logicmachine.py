@@ -136,12 +136,12 @@ def process_data_regions(data_regions):
         regions_list = get_main_region_by_points(data_regions)
         if len(regions_list) == 1:
             main_region = regions_list[0]
+        elif len(regions_list) == 0:
+            print("No regions where found, quitting")
+            exit(0)
         else:
             # Creating a merged data_region
-            try:
-                main_region = regions_list[0]
-            except:
-                a = 10
+            main_region = regions_list[0]
             for index in range(1, len(regions_list)):
                 main_region.children += regions_list[index].children
                 # merge_data_regions(main_region, regions_list[index])

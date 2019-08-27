@@ -33,7 +33,7 @@ website = 'https://veranstaltungen.meinestadt.de/salem-baden'
 website = 'https://www.ueberlingen-bodensee.de/ueberlingen/event/search?reset=1'
 
 
-website = 'https://www.allgaeu.de/veranstaltung-allgaeu'
+website = 'http://www.tettnang.de/tt/veranstaltungen/index.php'
 
 
 

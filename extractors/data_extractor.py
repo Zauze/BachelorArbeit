@@ -101,6 +101,8 @@ class DataExtractor:
 
     @staticmethod
     def is_hit(node, label, n=2):
+        if n == 0:
+            return False
         if 'label' in node.data_container:
             if label in node.data_container['label']['hits']:
                 return True

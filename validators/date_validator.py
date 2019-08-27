@@ -30,7 +30,7 @@ class DateValidator(DataValidator):
 
         # Regex searching for full dates like 21.07.2019 or 21.07
         if re.search(
-                '([0-3]?[0-9]{1})[.:\-\s]+(0[1-9]{1}|1[12])([.:\-\s]+(2[0-9]{3}|[0-1]{1}[0-9]{1})|\s+|$)',
+                '([0-3]?[0-9]{1})[.:\-\s]+(0[1-9]{1}|1[012]{1})([.:\-\s]+(2[0-9]{3}|[0-1]{1}[0-9]{1})|\s+|$)',
                 DataValidator.flatten_text(node.text)
         ):
             found = True
