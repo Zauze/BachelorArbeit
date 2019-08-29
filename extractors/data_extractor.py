@@ -44,6 +44,13 @@ class DataExtractor:
                     continue
                 if specific_info is not None:
                     info_dict.update(specific_info)
+
+            # Long Description Extraction
+            if 'link' in info_dict and info_dict['link'] is not None:
+                extractor = DataExtractor.class_lookup(DataLabel.LONG_DESC)()
+                specific_info = extractor.extract(info_dict['link'])
+                info_dict.update(specific_info)
+            # Appending to the main information dict
             ret_list.append(info_dict)
         return ret_list
 
@@ -78,6 +85,7 @@ class DataExtractor:
         import extractors.location_extractor
         import extractors.link_extractor
         import extractors.short_desc_extractor
+        import extractors.long_desc_extractor
         import extractors.time_extractor
         import extractors.title_extractor
         import extractors.date_extractor
@@ -93,7 +101,8 @@ class DataExtractor:
             (DataLabel.TITLE, ex.title_extractor.TitleExtractor),
             (DataLabel.SHORT_DESC, ex.short_desc_extractor.ShortDescExtractor),
             (DataLabel.LINK, ex.link_extractor.LinkExtractor),
-            (DataLabel.LOCATION, ex.location_extractor.LocationExtractor)
+            (DataLabel.LOCATION, ex.location_extractor.LocationExtractor),
+            (DataLabel.LONG_DESC, ex.long_desc_extractor.LongDescExtractor)
         ]
         for el in lookup_table:
             if label == el[0]:

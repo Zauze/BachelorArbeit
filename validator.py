@@ -1,52 +1,30 @@
 import enhanced_simple_tree_matching as estm
 import validators.data_validator
-# This module's function is to
-# validate various conditions set on data regions and records
-unallowed_tags = [
-    'script',
-    'footer',
-    'meta',
-    'noscript',
-    'nav',
-    'select',
-    'option',
-    'input',
-    'img',
-    'figure',
-    'form'
-]
+from constants import *
+"""
+Module for noise detection and removal
+"""
 
-unallowed_ids_classes = [
-    'footer',
-    'menu',
-    'option',
-    'cookie',
-    'navigation',
-    '_nav',
-    'pre-headline'
-]
 
-MIN_REGION_DEPTH = 3
-MAX_REGION_DEPTH = 13
-MIN_INFORMATION_COUNT = 2
-
-# Function for validating data_regions
 def validate_data_region(data_region_node):
+    """
+    Function validates data regions in their depth,
+    removes noise
+    :param HTMLNode data_region_node: the root of the region to analyse
+    :return: bool
+    """
     # Validating depth
     data_region_node.calculate_depth()
     if data_region_node.depth <= MIN_REGION_DEPTH or data_region_node.depth >= MAX_REGION_DEPTH:
-        return None
+        return False
 
     # Validating ids, classes and tags
-    if data_region_node.type in unallowed_tags:
-        return None
+    # Returning None if the current data region node is marked as noise
+    if validators.data_validator.DataValidator.in_class_ids(data_region_node, NOISE_IDS_CLASSES):
+        return False
 
-    if validators.data_validator.DataValidator.in_class_ids(data_region_node, unallowed_ids_classes):
-        return None
-
-    for tag in unallowed_tags:
-        data_region_node.remove_type(tag)
-    for id_class in unallowed_ids_classes:
+    # Processing the children for noisy ids and classes
+    for id_class in NOISE_IDS_CLASSES:
         data_region_node.remove_id(id_class)
         data_region_node.remove_class(id_class)
 
@@ -55,15 +33,33 @@ def validate_data_region(data_region_node):
     for child in data_region_node.get_children():
         information_counts.append(estm.terminal(child, False))
     if max(information_counts) < MIN_INFORMATION_COUNT:
-        return None
+        return False
 
     return True
 
 
-# Function to preprocess dom trees
+def remove_noise_dp(detailed_page):
+    """
+    Removes noise from detailed pages
+    :param HTMLNode detailed_page: the root of the detailed page to process 
+    :return: None
+    """
+    # Removing noisy classes and ids
+    for id_class in NOISE_IDS_CLASSES:
+        detailed_page.remove_id(id_class)
+        detailed_page.remove_class(id_class)
+
+
 def preprocess(node):
+    """
+    Making an initial preprocess of a html node
+    - Removing the highest level <head> tag (since containing only metas, scripts etc.)
+    - Removing of irrelevant nodes
+    :param HTMLNode node: the node to process
+    :return: None
+    """
     if isinstance(node, str) or node.is_leaf():
-        return node
+        return
 
     if node.type == 'html':
         delete = []
@@ -75,7 +71,7 @@ def preprocess(node):
     else:
         remove = []
         for child in node.get_children():
-            if child.type in unallowed_tags:
+            if child.type in NOISE_TAGS:
                 remove.append(child)
 
         node.remove_children(remove)
@@ -83,5 +79,4 @@ def preprocess(node):
     for child in node.get_children():
         preprocess(child)
     node.update()
-    return node
 

@@ -1,10 +1,16 @@
 
 from enhanced_simple_tree_matching import *
 import enhanced_simple_tree_matching as estm
-import HTML_Tree
+import html_node
 import copy
 import validator
-from HTML_Tree import *
+import urllib.request
+import urllib.error
+import logicmachine
+from easyhtml import parser
+import constants
+from constants import *
+from html_node import *
 
 
 def combined_compare(parent, k):
@@ -37,8 +43,8 @@ def combined_compare(parent, k):
                         if 'distances' in parent.data_container:
                             if key in parent.data_container['distances'][i]:
                                 continue
-                        parent1 = HTML_Tree.HTMLNode('div', {}, None, 0)
-                        parent2 = HTML_Tree.HTMLNode('div', {}, None, 0)
+                        parent1 = html_node.HTMLNode('div', {}, None, 0)
+                        parent2 = html_node.HTMLNode('div', {}, None, 0)
                         parent1.children = parent.truncate_children(start-1, l-1)
                         parent2.children = parent.truncate_children(l-1, l+j-1)
                         result = estm.normalized_tree_distance(parent1, parent2, True)
@@ -218,3 +224,95 @@ def extract_data_regions(node):
                 data_region_node.children = children
             data_regions.append(data_region_node)
     return data_regions
+
+
+def main_text_extraction(root):
+    """
+    Extracts the main text of a detailed page
+    :param HTMLNode root:
+    :return: list of HTMLNode: the main content area
+    """
+    main_content = []
+    # Get the node with the most content
+    ret_dict = logicmachine.find_most_text_node(root)
+    main_node = root.find_id(ret_dict['id'])
+    main_content.append(main_node)
+
+    # Checking the neighbors of the main node
+    parent = main_node.parent
+    neighbors = parent.get_children()
+    ind = neighbors.index(main_node)
+    left_neighbors = neighbors[0:ind] or []
+    left_neighbors = list(reversed(left_neighbors))
+    right_neighbors = neighbors[ind + 1:-1] or []
+
+    for l in left_neighbors:
+        if estm.number_of_words(l.get_full_text()) >= 10:
+            main_content.insert(0, l)
+        elif l.type in HEADER:
+            main_content.insert(0, l)
+            break
+
+    for r in right_neighbors:
+        if estm.number_of_words(r.get_full_text()) >= 10:
+            main_content.append(r)
+
+    return main_content
+
+
+def process_link(link):
+    """
+    Processes the given link, does some noise removal
+    and return the detailed page in form of a HTMLNode object
+    :param str link:
+    :return: list of HTMLNode
+    """
+    website = constants.website
+
+    # Build the right website link
+    if link[0] == '/':
+        if re.search('(^((http[s]{0,1}://)?www\.)?.+\.[a-z]+)/', website) is None:
+            # TODO: add logger output
+            constants.logger.error('Unknown website link format')
+            return None
+        else:
+            site_pref = re.findall('(^((http[s]{0,1}://)?www\.)?.+\.[a-z]+)/', website)[0][0]
+            website = site_pref + link
+    else:
+        website = link
+
+    # Launch website and get HTML code
+    try:
+        response = urllib.request.urlopen(website)
+    except urllib.error.URLError:
+        constants.logger.error('Page:"%s" was not able to launch' % website)
+        return None
+    source = response.read().decode('latin-1')
+
+    # Transfer HTML code via easyhtml
+    dom_parser = parser.DOMParser()
+    dom_parser.feed(str(source))
+    document = dom_parser.get_dom()
+
+    # Finding the html node
+    html_object = None
+    for node in document.elements:
+        if isinstance(node, easyhtml.dom.HTMLTag):
+            if node.tag_name == 'html':
+                html_object = node
+                break
+    if html_object is None:
+        constants.logger.error('No html tag was found on detailed page')
+        return None
+
+    # Transforming the dom tree into the built in data objects
+    # of HTMLNodes
+    detailed_page = HTMLNode(html_object, 0)
+
+    # preprocessing and noise removal
+    validator.preprocess(detailed_page)
+    validator.remove_noise_dp(detailed_page)
+
+    # Finding and returning main text
+    return detailed_page
+

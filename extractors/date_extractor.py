@@ -10,8 +10,6 @@ class DateExtractor(DataExtractor):
     Extractor class for date
     """
     def extract(self, node):
-        if node.identification == 369:
-            a = 10
         text = DataValidator.flatten_text(node.text)
         date_info = {
           'day': None,

@@ -28,7 +28,6 @@ class DataValidator:
     def get_label(self):
         return NotImplementedError('calling get_label function from abstract class')
 
-
     @staticmethod
     def in_class_ids(node, words):
         """

@@ -341,3 +341,20 @@ class HTMLNode:
                 return None
             else:
                 return ret + path
+
+    def get_full_text(self):
+        """
+        This function returns the full text
+        of a subtree with the current object
+        as root node
+        :return: str
+        """
+        full_text = ""
+
+        for child in self.children:
+            if isinstance(child, str):
+                full_text += child
+            else:
+                full_text += child.get_full_text()
+
+        return full_text

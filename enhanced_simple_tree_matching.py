@@ -8,7 +8,6 @@ import datetime
 from copy import deepcopy
 
 
-
 def number_of_words(text):
     """
     Returns number of words from text
@@ -184,7 +183,6 @@ def tree_alignment(tree_one, tree_two, calculate_estm = False, string_function=g
     return tree1
 
 
-# TODO: implement or remove
 def assign_alignment(children1, children2, wmatrix):
     """
     Assigns the best match of children nodes from one tree to
@@ -257,6 +255,7 @@ def assign_alignment(children1, children2, wmatrix):
         alignments += assign_alignment(children1, children2, wmatrix)
     return alignments
 
+
 def terminal(tree, count_pictures=True):
     """
     Counts terminals (text nodes) of the subtree which root is param tree
@@ -276,6 +275,7 @@ def terminal(tree, count_pictures=True):
     for child in tree.get_children():
         count += terminal(child)
     return count
+
 
 def tree_structure_points(node, n=0):
     """
@@ -333,17 +333,9 @@ def normalized_tree_distance(tree1, tree2, artificial_root=False):
         if aligned_tree.is_leaf():
             return 1.0
     aligned_tree.compute_text()
-    #matched = terminal(aligned_tree)
-    #max_val = max(terminal(tree1), terminal(tree2))
-
+    # Computing scores for aligned tree and the two given trees
     aligned_score = tree_structure_points(aligned_tree, 1) - 2
     max_score = max(tree_structure_points(tree1, 1) - 2, tree_structure_points(tree2, 1) - 2)
-
-    #if max_val == 0:
-    #    word_score = 1.0
-    #else:
-    #    word_score = 1.0 - (float(matched)/float(max_val))
-
     if max_score == 0:
         structure_val = 1.0
     else:

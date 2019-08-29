@@ -12,22 +12,10 @@ from validators.long_desc_validator import *
 from validators.short_desc_validator import *
 from validators.title_validator import *
 from validators.link_validator import *
+from constants import *
 import re
-from HTML_Tree import HTMLNode
-
-# This constant decides at which modified depth a node is
-# denoted as too high to contain a data item
-# modified depth: depth counted up if the current node is not a simplified type
-# (like strong etc.)
-MAX_HEIGHT = 1
-LABELS = [
-        DataLabel.TIME,
-        DataLabel.DATE,
-        DataLabel.TITLE,
-        DataLabel.SHORT_DESC,
-        DataLabel.LINK,
-        DataLabel.LOCATION,
-    ]
+from html_node import HTMLNode
+from constants import *
 
 
 def run_validation(node, n, label_dict):
@@ -47,7 +35,7 @@ def run_validation(node, n, label_dict):
     :return: None
     """
     # If the height is too big
-    if n > MAX_HEIGHT:
+    if n > MOD_MAX_HEIGHT:
         return
 
     hit = False
@@ -90,12 +78,13 @@ def run_validation(node, n, label_dict):
             else:
                 node.data_container['label']['not'].append(obj.get_label())
     if node.parent is not None:
+        # Because those types are formatting areas of webpages
         if node.type in ['div', 'td', 'tr']:
             run_validation(node.parent, n + 1, label_dict)
-        elif node.type in ['p', 'strong'] or estm.number_of_words(node.get_pure_text()) > 0:
+        elif node.type in FORMAT_TAGS or estm.number_of_words(node.get_pure_text()) > 0:
             run_validation(node.parent, n, label_dict)
         else:
-            run_validation(node.parent, n+1, label_dict)
+            run_validation(node.parent, n + 1, label_dict)
 
 
 def process_data_regions(data_regions):
@@ -137,14 +126,13 @@ def process_data_regions(data_regions):
         if len(regions_list) == 1:
             main_region = regions_list[0]
         elif len(regions_list) == 0:
-            print("No regions where found, quitting")
+            logger.error("No regions where found, quitting...")
             exit(0)
         else:
             # Creating a merged data_region
             main_region = regions_list[0]
             for index in range(1, len(regions_list)):
                 main_region.children += regions_list[index].children
-                # merge_data_regions(main_region, regions_list[index])
 
     main_region.update()
     for record in main_region.get_children():
@@ -157,34 +145,6 @@ def process_data_regions(data_regions):
         process_hits(label_dict)
         record.data_container['label_dict'] = label_dict
     return main_region
-
-
-def merge_data_regions(region1, region2):
-    """
-    Merges two data regions together
-    :param HTMLNode region1:
-    :param HTMLNode region2:
-    :return: HTMLNode
-    """
-    # Finding the region with the lower amount of records
-    if len(region1.get_children()) > len(region2.get_children()):
-        smaller = region2
-        bigger = region1
-    else:
-        smaller = region1
-        bigger = region2
-
-    children = []
-    for index in range(len(smaller.get_children())):
-        # Creating an new artificial root node for the records
-        rec_root = HTMLNode('div', None, '', 0)
-        rec_root.children = [smaller.get_children()[index], bigger.get_children()[index]]
-        rec_root.update()
-        children.append(rec_root)
-
-    region1.children = children
-    region1.update()
-    return region1
 
 
 def get_main_region_by_points(regions):
@@ -326,12 +286,37 @@ def check_paths(main_region, label):
                 record.data_container['label_dict'][label]['scores'][i] = (2, node)
 
 
+def get_unformatted_text(node):
+    """
+    Returns the text of a node plus all text
+    which is included into formatting children nodes
+    :param HTMLNode node: the node to process
+    :return: str
+    """
+    text = ''
+    for child in node.children:
+        if isinstance(child, str):
+            text += child
+        else:
+            if child.type in FORMAT_TAGS:
+                text += get_unformatted_text(child)
+    return text
 
 
-
-
-
-
-
-
-
+def find_most_text_node(node):
+    """
+    Finds recursively the node with the most word count
+    :param HTMLNode node: the root node, where to start
+    :return: dict : 'id' is the id of a node, 'words' is the word count
+    """
+    text = get_unformatted_text(node)
+    word_count = estm.number_of_words(text)
+    ret_dict = {
+        'id': node.identification,
+        'words': word_count
+    }
+    for child in node.get_children():
+        ret_child = find_most_text_node(child)
+        if ret_child['words'] > ret_dict['words']:
+            ret_dict = ret_child
+    return ret_dict
