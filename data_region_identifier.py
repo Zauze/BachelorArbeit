@@ -1,12 +1,12 @@
 
-from enhanced_simple_tree_matching import *
-import enhanced_simple_tree_matching as estm
+from tree_processor import *
+import tree_processor as tp
 import html_node
 import copy
-import validator
+import data_region_processor
+import preprocessor
 import urllib.request
 import urllib.error
-import logicmachine
 from easyhtml import parser
 import constants
 from constants import *
@@ -23,8 +23,6 @@ def combined_compare(parent, k):
     :return: dict: containing the calculated distances between nodes and
                    groupings
     """
-    if parent.identification == 159:
-        a = 10
     nodes = parent.get_children()
     distances = {}
     for i in range(1, k + 1):
@@ -47,7 +45,7 @@ def combined_compare(parent, k):
                         parent2 = html_node.HTMLNode('div', {}, None, 0)
                         parent1.children = parent.truncate_children(start-1, l-1)
                         parent2.children = parent.truncate_children(l-1, l+j-1)
-                        result = estm.normalized_tree_distance(parent1, parent2, True)
+                        result = tp.normalized_tree_distance(parent1, parent2, True)
 
                         distances[j][key] = result
                         start = l
@@ -65,9 +63,9 @@ def mdr_2(node, k):
     :return: None
     """
     node.calculate_depth()
-    if node.depth >= validator.MIN_REGION_DEPTH:
+    if node.depth >= data_region_processor.MIN_REGION_DEPTH:
         if 'distances' not in node.data_container:
-           node.data_container['distances'] = combined_compare(node, k)
+            node.data_container['distances'] = combined_compare(node, k)
         for child in node.get_children():
             if 'distances' not in child.data_container:
                 mdr_2(child, k)
@@ -178,7 +176,7 @@ def find_data_regions(node, k, threshold):
     """
     node.calculate_depth()
     node.data_container['data_regions'] = []
-    if validator.MAX_REGION_DEPTH >= node.depth >= validator.MIN_REGION_DEPTH:
+    if data_region_processor.MAX_REGION_DEPTH >= node.depth >= data_region_processor.MIN_REGION_DEPTH:
         node.data_container['data_regions'] = identify_data_regions(1, node, k, threshold)
     temp_regions = []
     for child in node.get_children():
@@ -234,7 +232,7 @@ def main_text_extraction(root):
     """
     main_content = []
     # Get the node with the most content
-    ret_dict = logicmachine.find_most_text_node(root)
+    ret_dict = find_most_text_node(root)
     main_node = root.find_id(ret_dict['id'])
     main_content.append(main_node)
 
@@ -246,15 +244,16 @@ def main_text_extraction(root):
     left_neighbors = list(reversed(left_neighbors))
     right_neighbors = neighbors[ind + 1:-1] or []
 
+    # The value of 10 is hardcoded and can be adjusted
     for l in left_neighbors:
-        if estm.number_of_words(l.get_full_text()) >= 10:
+        if tp.number_of_words(l.get_full_text()) >= 10:
             main_content.insert(0, l)
         elif l.type in HEADER:
             main_content.insert(0, l)
             break
 
     for r in right_neighbors:
-        if estm.number_of_words(r.get_full_text()) >= 10:
+        if tp.number_of_words(r.get_full_text()) >= 10:
             main_content.append(r)
 
     return main_content
@@ -272,7 +271,6 @@ def process_link(link):
     # Build the right website link
     if link[0] == '/':
         if re.search('(^((http[s]{0,1}://)?www\.)?.+\.[a-z]+)/', website) is None:
-            # TODO: add logger output
             constants.logger.error('Unknown website link format')
             return None
         else:
@@ -310,9 +308,45 @@ def process_link(link):
     detailed_page = HTMLNode(html_object, 0)
 
     # preprocessing and noise removal
-    validator.preprocess(detailed_page)
-    validator.remove_noise_dp(detailed_page)
+    preprocessor.preprocess(detailed_page)
+    preprocessor.remove_noise_dp(detailed_page)
 
     # Finding and returning main text
     return detailed_page
+
+
+def get_unformatted_text(node):
+    """
+    Returns the text of a node plus all text
+    which is included into formatting children nodes
+    :param HTMLNode node: the node to process
+    :return: str
+    """
+    text = ''
+    for child in node.children:
+        if isinstance(child, str):
+            text += child
+        else:
+            if child.type in FORMAT_TAGS:
+                text += get_unformatted_text(child)
+    return text
+
+
+def find_most_text_node(node):
+    """
+    Finds recursively the node with the most word count
+    :param HTMLNode node: the root node, where to start
+    :return: dict : 'id' is the id of a node, 'words' is the word count
+    """
+    text = get_unformatted_text(node)
+    word_count = tp.number_of_words(text)
+    ret_dict = {
+        'id': node.identification,
+        'words': word_count
+    }
+    for child in node.get_children():
+        ret_child = find_most_text_node(child)
+        if ret_child['words'] > ret_dict['words']:
+            ret_dict = ret_child
+    return ret_dict
 

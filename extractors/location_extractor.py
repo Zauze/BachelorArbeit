@@ -1,8 +1,8 @@
 import re
 import extractors as ex
 import extractors.data_extractor as de
-from validators.data_validator import DataValidator
-from validators.data_label import DataLabel
+from detectors.data_detector import DataValidator
+from detectors.data_label import DataLabel
 
 
 class LocationExtractor(ex.data_extractor.DataExtractor):

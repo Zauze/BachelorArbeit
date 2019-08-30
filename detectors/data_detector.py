@@ -1,4 +1,4 @@
-from validators.data_label import DataLabel
+from detectors.data_label import DataLabel
 import re
 
 

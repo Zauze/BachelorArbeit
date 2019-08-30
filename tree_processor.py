@@ -326,8 +326,6 @@ def normalized_tree_distance(tree1, tree2, artificial_root=False):
     """
     tree1.update()
     tree2.update()
-    if tree1.identification == 1093:
-        a = 10
     aligned_tree = tree_alignment(tree1, tree2)
     if artificial_root:
         if aligned_tree.is_leaf():

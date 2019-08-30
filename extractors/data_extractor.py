@@ -1,6 +1,7 @@
 import re
-from validators.data_label import DataLabel
-import logicmachine
+from detectors.data_label import DataLabel
+import data_region_processor
+
 
 class DataExtractor:
     """
@@ -21,7 +22,7 @@ class DataExtractor:
                 if label == DataLabel.NOISE:
                     continue
                 # Looking for similarities
-                logicmachine.check_paths(main_region, label)
+                data_region_processor.check_paths(main_region, label)
                 # Getting the fitting extractor object
                 extractor = DataExtractor.class_lookup(label)()
 
@@ -54,10 +55,12 @@ class DataExtractor:
             ret_list.append(info_dict)
         return ret_list
 
+    @staticmethod
     def extract(self, node):
         raise NotImplementedError('Calling extract from abstract class!')
 
-    def remove_extra_whitespaces(self, text):
+    @staticmethod
+    def remove_extra_whitespaces(text):
         """
         Removes extra and trailing whitespaces in a string
         :param str text: the text to process

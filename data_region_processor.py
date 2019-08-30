@@ -1,24 +1,51 @@
-# This module checks nodes for their identities
-from enum import Enum
-import validators
-from validators.data_label import DataLabel
-from validators.noise_validator import *
-from validators.date_validator import *
-from validators.data_validator import *
-from validators.data_label import DataLabel
-from validators.time_validator import *
-from validators.location_validator import *
-from validators.long_desc_validator import *
-from validators.short_desc_validator import *
-from validators.title_validator import *
-from validators.link_validator import *
+import tree_processor as tp
+from detectors.data_detector import *
+from detectors.noise_detector import *
+from detectors.date_detector import *
+from detectors.time_detector import *
+from detectors.location_detector import *
+from detectors.short_desc_detector import *
+from detectors.title_detector import *
+from detectors.link_detector import *
 from constants import *
-import re
-from html_node import HTMLNode
-from constants import *
+"""
+Module for data region validation and processing
+"""
 
 
-def run_validation(node, n, label_dict):
+def validate_data_region(data_region_node):
+    """
+    Function validates data regions in their depth and
+    removes noise
+    :param HTMLNode data_region_node: the root of the region to analyse
+    :return: bool
+    """
+    # Validating depth
+    data_region_node.calculate_depth()
+    if data_region_node.depth <= MIN_REGION_DEPTH or data_region_node.depth >= MAX_REGION_DEPTH:
+        return False
+
+    # Validating ids, classes and tags
+    # Returning None if the current data region node is marked as noise
+    if DataValidator.in_class_ids(data_region_node, NOISE_IDS_CLASSES):
+        return False
+
+    # Processing the children for noisy ids and classes
+    for id_class in NOISE_IDS_CLASSES:
+        data_region_node.remove_id(id_class)
+        data_region_node.remove_class(id_class)
+
+    # Information count check
+    information_counts = []
+    for child in data_region_node.get_children():
+        information_counts.append(tp.terminal(child, False))
+    if max(information_counts) < MIN_INFORMATION_COUNT:
+        return False
+
+    return True
+
+
+def run_node_detection(node, n, label_dict):
     """
     This function runs all the validation process of
     each validator for a given node and saves the information
@@ -80,11 +107,11 @@ def run_validation(node, n, label_dict):
     if node.parent is not None:
         # Because those types are formatting areas of webpages
         if node.type in ['div', 'td', 'tr']:
-            run_validation(node.parent, n + 1, label_dict)
-        elif node.type in FORMAT_TAGS or estm.number_of_words(node.get_pure_text()) > 0:
-            run_validation(node.parent, n, label_dict)
+            run_node_detection(node.parent, n + 1, label_dict)
+        elif node.type in FORMAT_TAGS or tp.number_of_words(node.get_pure_text()) > 0:
+            run_node_detection(node.parent, n, label_dict)
         else:
-            run_validation(node.parent, n + 1, label_dict)
+            run_node_detection(node.parent, n + 1, label_dict)
 
 
 def process_data_regions(data_regions):
@@ -101,7 +128,7 @@ def process_data_regions(data_regions):
         starters = region.find_nodes_with_depth(0)
         label_dict = {}
         for node in starters:
-            run_validation(node, 0, label_dict)
+            run_node_detection(node, 0, label_dict)
         # Very important - removing redundant nodes, since we
         # are using the region with the most hits as main
         process_hits(label_dict)
@@ -139,7 +166,7 @@ def process_data_regions(data_regions):
         starters = record.find_nodes_with_depth(0)
         label_dict = {}
         for node in starters:
-            run_validation(node, 0, label_dict)
+            run_node_detection(node, 0, label_dict)
         # Very important - removing redundant nodes, since we
         # are using the region with the most hits as main
         process_hits(label_dict)
@@ -277,8 +304,8 @@ def check_paths(main_region, label):
         for record in main_region.get_children():
             ind = 0
             matching_ind = []
-            for tp in record.data_container['label_dict'][label]['scores']:
-                if str(tp[1].get_path(main_region.identification)) == max_path:
+            for el in record.data_container['label_dict'][label]['scores']:
+                if str(el[1].get_path(main_region.identification)) == max_path:
                     matching_ind.append(ind)
                 ind += 1
             for i in matching_ind:
@@ -286,37 +313,3 @@ def check_paths(main_region, label):
                 record.data_container['label_dict'][label]['scores'][i] = (2, node)
 
 
-def get_unformatted_text(node):
-    """
-    Returns the text of a node plus all text
-    which is included into formatting children nodes
-    :param HTMLNode node: the node to process
-    :return: str
-    """
-    text = ''
-    for child in node.children:
-        if isinstance(child, str):
-            text += child
-        else:
-            if child.type in FORMAT_TAGS:
-                text += get_unformatted_text(child)
-    return text
-
-
-def find_most_text_node(node):
-    """
-    Finds recursively the node with the most word count
-    :param HTMLNode node: the root node, where to start
-    :return: dict : 'id' is the id of a node, 'words' is the word count
-    """
-    text = get_unformatted_text(node)
-    word_count = estm.number_of_words(text)
-    ret_dict = {
-        'id': node.identification,
-        'words': word_count
-    }
-    for child in node.get_children():
-        ret_child = find_most_text_node(child)
-        if ret_child['words'] > ret_dict['words']:
-            ret_dict = ret_child
-    return ret_dict

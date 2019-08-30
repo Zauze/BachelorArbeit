@@ -1,8 +1,8 @@
-from logicmachine import *
-from validators.data_validator import DataValidator
-import enhanced_simple_tree_matching as estm
+from detectors.data_detector import DataValidator
+import tree_processor as tp
 import functools
 import re
+from detectors.data_label import DataLabel
 
 class DateValidator(DataValidator):
     hit_labels = [
@@ -82,7 +82,7 @@ class DateValidator(DataValidator):
         words = ['am', 'vom', 'bis', 'zum', 'datum']
 
         # Condition 1: The text has fewer than 15 words
-        if estm.number_of_words(DataValidator.flatten_text(node.text)) <= 15:
+        if tp.number_of_words(DataValidator.flatten_text(node.text)) <= 15:
             score += weights[0]
             # Condition 2. Additionally contains suitable words
             for word in words:

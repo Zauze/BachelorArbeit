@@ -1,7 +1,6 @@
-from logicmachine import *
-from validators.data_validator import DataValidator
-from validators.data_label import DataLabel
-import enhanced_simple_tree_matching as estm
+from detectors.data_detector import DataValidator
+from detectors.data_label import DataLabel
+import tree_processor as tp
 import re
 
 
@@ -13,7 +12,7 @@ class LongDescValidator(DataValidator):
 
     def kill_check(self, node):
         text = DataValidator.flatten_text(node.text)
-        if estm.number_of_words(text) < 15:
+        if tp.number_of_words(text) < 15:
             return True
         return False
 
@@ -34,7 +33,7 @@ class LongDescValidator(DataValidator):
 
     def hit_check(self, node):
         text = DataValidator.flatten_text(node.text)
-        if estm.number_of_words(text) >= 30:
+        if tp.number_of_words(text) >= 30:
             return True
         if DataValidator.in_class_ids(node, LongDescValidator.ids_and_classes):
             return True
@@ -43,7 +42,7 @@ class LongDescValidator(DataValidator):
     def score_check(self, node):
         score = 0
         text = DataValidator.flatten_text(node.text)
-        if estm.number_of_words(text) >= 20:
+        if tp.number_of_words(text) >= 20:
             score += 1
         found = False
         for tag in ['p', 'header', 'h', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']:

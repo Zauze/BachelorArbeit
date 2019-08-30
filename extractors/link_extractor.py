@@ -1,5 +1,4 @@
-from extractors.data_extractor import  DataExtractor
-import errors.errors
+from extractors.data_extractor import DataExtractor
 
 
 class LinkExtractor(DataExtractor):

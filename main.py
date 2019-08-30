@@ -7,14 +7,14 @@ import constants
 import easyhtml
 import urllib.request
 import urllib.error
-import validator
-import logicmachine
+import data_region_processor
 import errors.errors
-import data_region_finder
+import data_region_identifier
 import logging
 import sys
 import os.path
 import yaml
+import preprocessor
 
 # TODO: check if this is needed
 #sys.setrecursionlimit(1000000000)
@@ -86,18 +86,18 @@ if html_object is None:
 dom_tree = HTMLNode(html_object, 0)
 
 # Preprocess the DOM tree
-validator.preprocess(dom_tree)
+preprocessor.preprocess(dom_tree)
 
 # Finding data regions
-data_region_finder.find_data_regions(dom_tree, K_VALUE, THRESHOLD)
+data_region_identifier.find_data_regions(dom_tree, K_VALUE, THRESHOLD)
 
 # Extracting data regions
-data_regions = data_region_finder.extract_data_regions(dom_tree)
+data_regions = data_region_identifier.extract_data_regions(dom_tree)
 
 # Validating the data regions and removing the invalid ones
 remove_list = []
 for region in data_regions:
-    if not validator.validate_data_region(region):
+    if not data_region_processor.validate_data_region(region):
         remove_list.append(region)
     else:
         region.update()
@@ -105,13 +105,13 @@ for el in remove_list:
     data_regions.remove(el)
 
 # Getting the main data region
-main_region = logicmachine.process_data_regions(data_regions)
+main_region = data_region_processor.process_data_regions(data_regions)
 
 # Extract the information from the data records
 information_list = DataExtractor.extract_data_records(main_region)
 
 # Creating yaml file for storing
-open('output.yaml', 'a').close()
+open('output.yaml', 'w').close()
 fd = open('output.yaml', 'w')
 
 # Storing information_list to file

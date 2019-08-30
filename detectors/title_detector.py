@@ -1,8 +1,8 @@
-from logicmachine import *
-from validators.data_validator import DataValidator
-from validators.data_label import DataLabel
-import enhanced_simple_tree_matching as estm
+from detectors.data_detector import DataValidator
+from detectors.data_label import DataLabel
+import tree_processor as tp
 import functools
+import re
 
 
 class TitleValidator(DataValidator):
@@ -16,7 +16,7 @@ class TitleValidator(DataValidator):
 
     def base_check(self, node):
         text = DataValidator.flatten_text(node.text)
-        if estm.number_of_words(text) > 15:
+        if tp.number_of_words(text) > 15:
             return False
         if len(node.get_children()) > 1:
             return False
@@ -42,7 +42,7 @@ class TitleValidator(DataValidator):
                 break
 
         # Condition 3: Contains less than 10 words
-        if estm.number_of_words(DataValidator.flatten_text(node.text)) <= 10:
+        if tp.number_of_words(DataValidator.flatten_text(node.text)) <= 10:
             score += weights[2]
             # Condition 4: Contains symbols - and :
             if re.search('[:\-]+', DataValidator.flatten_text(node.text)):

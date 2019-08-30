@@ -1,9 +1,9 @@
-from logicmachine import *
-from validators.data_validator import DataValidator
-from validators.data_label import DataLabel
+from detectors.data_detector import DataValidator
+from detectors.data_label import DataLabel
 import functools
-import enhanced_simple_tree_matching as estm
+import tree_processor as tp
 import re
+
 
 class ShortDescValidator(DataValidator):
     ids_and_classes = [
@@ -15,7 +15,7 @@ class ShortDescValidator(DataValidator):
         if DataValidator.in_class_ids(node, ShortDescValidator.ids_and_classes):
             return False
         text = DataValidator.flatten_text(node.text)
-        if estm.number_of_words(text) < 3:
+        if tp.number_of_words(text) < 3:
             return True
         for child in node.get_children():
             if child.has_tag('div') or child.has_tag('span'):
@@ -27,14 +27,14 @@ class ShortDescValidator(DataValidator):
         for tag in ['span', 'div']:
             if node.has_tag(tag):
                 found = True
-        if estm.number_of_words(DataValidator.flatten_text(node.text)) > 15:
+        if tp.number_of_words(DataValidator.flatten_text(node.text)) > 15:
             found = True
         return found
 
     def hit_check(self, node):
         if DataValidator.in_class_ids(node, ShortDescValidator.ids_and_classes):
             return True
-        if estm.number_of_words(DataValidator.flatten_text(node.text)) >= 20:
+        if tp.number_of_words(DataValidator.flatten_text(node.text)) >= 20:
             return True
         return False
 
@@ -48,7 +48,7 @@ class ShortDescValidator(DataValidator):
         text = DataValidator.flatten_text(node.text)
 
         # Condition 1: more than 15 words
-        if estm.number_of_words(text) >= 15:
+        if tp.number_of_words(text) >= 15:
             score += weights[0]
 
         # Condition 2: Contains quotation marks

@@ -1,7 +1,6 @@
-from logicmachine import *
-from validators.data_validator import DataValidator
-from validators.data_label import DataLabel
-import enhanced_simple_tree_matching as estm
+from detectors.data_detector import DataValidator
+from detectors.data_label import DataLabel
+import tree_processor as tp
 import functools
 import re
 
@@ -38,7 +37,7 @@ class TimeValidator(DataValidator):
         words = ['von', 'bis', 'ab', 'uhrzeit', 'um']
         
         # Condition 1: contains less than 16 words
-        if estm.number_of_words(DataValidator.flatten_text(node.text)) <= 15:
+        if tp.number_of_words(DataValidator.flatten_text(node.text)) <= 15:
             score += weights[1]
             # Condition 2: combination of 1 and 2
             for word in words:

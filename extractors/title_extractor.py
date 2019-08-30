@@ -1,7 +1,7 @@
 from extractors.data_extractor import DataExtractor
 import errors.errors
-from validators.data_validator import DataValidator
-from validators.data_label import DataLabel
+from detectors.data_detector import DataValidator
+from detectors.data_label import DataLabel
 
 
 class TitleExtractor(DataExtractor):
@@ -16,5 +16,5 @@ class TitleExtractor(DataExtractor):
 
         text = DataValidator.flatten_text(node.text)
         return {
-            'title': self.remove_extra_whitespaces(text)
+            'title': DataExtractor.remove_extra_whitespaces(text)
         }

@@ -1,7 +1,6 @@
-from logicmachine import *
-from validators.data_label import DataLabel
-from validators.data_validator import DataValidator
-import enhanced_simple_tree_matching as estm
+from detectors.data_label import DataLabel
+from detectors.data_detector import DataValidator
+import tree_processor as tp
 import functools
 import re
 
@@ -23,7 +22,7 @@ class LocationValidator(DataValidator):
 
     def kill_check(self, node):
         text = DataValidator.flatten_text(node.text)
-        if estm.number_of_words(text) > 10:
+        if tp.number_of_words(text) > 10:
             return True
         if re.search('[\/?!]', text):
             return True
@@ -38,7 +37,7 @@ class LocationValidator(DataValidator):
     def hit_check(self, node):
         if DataValidator.in_class_ids(node, LocationValidator.ids_classes):
             return True
-        if estm.number_of_words(DataValidator.flatten_text(node.text)) <= 10:
+        if tp.number_of_words(DataValidator.flatten_text(node.text)) <= 10:
             for word in LocationValidator.key_words:
                 reg = '(\s+|^)%s(\s+|:)' % word
                 if re.match(reg, DataValidator.flatten_text(node.text).lower()):
@@ -75,7 +74,7 @@ class LocationValidator(DataValidator):
             score += weights[2]
 
         # Condition 4: Contains less than 11 words
-        if estm.number_of_words(text) <= 10:
+        if tp.number_of_words(text) <= 10:
             score += weights[3]
 
 

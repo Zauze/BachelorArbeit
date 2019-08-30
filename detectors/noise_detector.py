@@ -1,7 +1,7 @@
 
-from validators.data_label import DataLabel
-from validators.data_validator import DataValidator
-import enhanced_simple_tree_matching as estm
+from detectors.data_label import DataLabel
+from detectors.data_detector import DataValidator
+import tree_processor as tp
 import re
 
 
@@ -31,7 +31,7 @@ class NoiseValidator(DataValidator):
         if node.type in tags:
             return True
 
-        if estm.number_of_words(DataValidator.flatten_text(node.text)) == 0:
+        if tp.number_of_words(DataValidator.flatten_text(node.text)) == 0:
             return True
         if '©' in DataValidator.flatten_text(node.text):
             return True
@@ -42,7 +42,7 @@ class NoiseValidator(DataValidator):
         score = 0
         # First Condition: Contains only one word which is not highlighted
         # with <p> or <h> tags
-        if estm.number_of_words(DataValidator.flatten_text(node.text)) == 1:
+        if tp.number_of_words(DataValidator.flatten_text(node.text)) == 1:
             for tag in ['<p>', '<h>', '<h1>', '<h2>', '<h3>', '<h4>', '<h5>', '<h6>', '<header>']:
                 if node.has_tag(tag):
                     score = -1

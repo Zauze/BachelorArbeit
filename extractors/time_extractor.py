@@ -1,6 +1,6 @@
 from extractors.data_extractor import DataExtractor
 import errors.errors
-from validators.data_validator import DataValidator
+from detectors.data_detector import DataValidator
 import re
 
 class TimeExtractor(DataExtractor):
