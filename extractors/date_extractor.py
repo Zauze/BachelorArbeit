@@ -56,7 +56,9 @@ class DateExtractor(DataExtractor):
         else:
             date_info['year'] = None
 
-        return date_info
+        return {
+            'date': ("%s-%s-%s" % (date_info['year'], date_info['month'], date_info['day']))
+        }
 
 
     def month_lookup(self, text):

@@ -97,12 +97,12 @@ def distance(node, i, j, k):
 
 
 def valid(cur_dr):
-    # TODO: finish this
     """
     In this function extra validation
     processes can be done to ensure
     that the data region given in cur_dr
-    is proper
+    is proper. Currently this function is
+    empty but can be adjusted.
     :param HTMLNode cur_dr: current data record
     :return: bool
     """

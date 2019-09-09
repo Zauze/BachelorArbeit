@@ -8,7 +8,7 @@ class TimeExtractor(DataExtractor):
     """
     Extractor class to extract time
     """
-    # TODO: 09.01.2019 09:20 Uhr - 12.11.2019 12:12 Uhf is not functioning properly!
+    # TODO: 09.01.2019 09:20 Uhr - 12.11.2019 12:12 Uhr is not functioning properly!
     def extract(self, node):
         """
         Actual extraction function
@@ -68,4 +68,6 @@ class TimeExtractor(DataExtractor):
                                 return ret_info
                     except IndexError:
                         break
-        return ret_info
+        return {
+            'time': ("%s:%s" % (ret_info['hour'], ret_info['minutes']))
+        }

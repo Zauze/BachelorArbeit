@@ -20,7 +20,6 @@ class ShortDescValidator(DataValidator):
                 return False
 
         found = False
-        # TODO: what's about tables?
         for tag in ['span', 'div', 'td']:
             if node.type == tag:
                 found = True

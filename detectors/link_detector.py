@@ -13,7 +13,6 @@ class LinkValidator(DataValidator):
         return False
 
     def score_check(self, node):
-        # TODO: Check if there can be any score check
         score = 1.0
         return score
 

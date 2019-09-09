@@ -16,5 +16,5 @@ class ShortDescExtractor(DataExtractor):
 
         text = DataValidator.flatten_text(node.text)
         return {
-            'short_description': self.remove_extra_whitespaces(text).strip()
+            'disambiguatingDescription': self.remove_extra_whitespaces(text).strip()
         }

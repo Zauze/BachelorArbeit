@@ -262,7 +262,6 @@ def terminal(tree, count_pictures=True):
     count = 0
     if count_pictures and tree.type == 'picture' or tree.type == 'img':
         count += 1
-    # TODO: check if this is working
     if tree.has_text() is not None and re.search('\w+', tree.get_pure_text()) is not None:
         for child in tree.children:
             if isinstance(child, str):

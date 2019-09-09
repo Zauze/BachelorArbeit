@@ -19,6 +19,6 @@ class LocationExtractor(ex.data_extractor.DataExtractor):
         text = self.remove_extra_whitespaces(text)
         text = re.sub('.+:', '', text)
         return {
-            'location': text
+            'location': text.strip()
         }
 

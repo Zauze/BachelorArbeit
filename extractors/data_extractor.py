@@ -47,9 +47,9 @@ class DataExtractor:
                     info_dict.update(specific_info)
 
             # Long Description Extraction
-            if 'link' in info_dict and info_dict['link'] is not None:
+            if 'url' in info_dict and info_dict['url'] is not None:
                 extractor = DataExtractor.class_lookup(DataLabel.LONG_DESC)()
-                specific_info = extractor.extract(info_dict['link'])
+                specific_info = extractor.extract(info_dict['url'])
                 info_dict.update(specific_info)
             # Appending to the main information dict
             ret_list.append(info_dict)
@@ -74,10 +74,13 @@ class DataExtractor:
             words = re.findall('[^\s]+', lines[index])
             line = ''
             if len(words) == 0:
+                lines[index] = ''
                 continue
             for word in words[0:-1]:
                 line += word + ' '
             lines[index] = line + words[-1]
+        # Removing empty lines
+        lines = list(filter(lambda x: x != '', lines))
         new_text = lines[0]
         new_text += "\n".join(lines[1:])
         return new_text
