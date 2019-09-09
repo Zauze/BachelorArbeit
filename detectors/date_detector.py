@@ -19,9 +19,6 @@ class DateValidator(DataValidator):
         'jahr'
     ]
 
-    def kill_check(self, node):
-        return False
-
     def base_check(self, node):
         found = False
         if 'class' in node.attributes:
@@ -78,7 +75,8 @@ class DateValidator(DataValidator):
         # Preparations
         score = 0
         weights = [2, 3, 1, 3]
-        max_value = functools.reduce((lambda x, y: x + y), weights)
+        # 1 is subtracted because of the else condition
+        max_value = functools.reduce((lambda x, y: x + y), weights) - 1
         words = ['am', 'vom', 'bis', 'zum', 'datum']
 
         # Condition 1: The text has fewer than 15 words

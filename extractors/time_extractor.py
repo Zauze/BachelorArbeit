@@ -3,11 +3,12 @@ import errors.errors
 from detectors.data_detector import DataValidator
 import re
 
+
 class TimeExtractor(DataExtractor):
     """
     Extractor class to extract time
     """
-
+    # TODO: 09.01.2019 09:20 Uhr - 12.11.2019 12:12 Uhf is not functioning properly!
     def extract(self, node):
         """
         Actual extraction function

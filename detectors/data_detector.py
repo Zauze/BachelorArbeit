@@ -5,16 +5,11 @@ import re
 class DataValidator:
 
     def run_checks(self, node):
-        if self.kill_check(node):
-            return None
-        if not self.base_check(node):
-            return DataLabel.UNKNOWN
         if self.hit_check(node):
             return self.get_label()
+        if not self.base_check(node):
+            return DataLabel.UNKNOWN
         return self.score_check(node), self.get_label()
-
-    def kill_check(self, node):
-        return NotImplementedError('calling kill_check function from abstract class')
 
     def base_check(self, node):
         return NotImplementedError('calling base_check function from abstract class')

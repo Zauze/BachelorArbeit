@@ -45,7 +45,7 @@ def combined_compare(parent, k):
                         parent2 = html_node.HTMLNode('div', {}, None, 0)
                         parent1.children = parent.truncate_children(start-1, l-1)
                         parent2.children = parent.truncate_children(l-1, l+j-1)
-                        result = tp.normalized_tree_distance(parent1, parent2, True)
+                        result = tp.modified_norm_tree_dist(parent1, parent2, True)
 
                         distances[j][key] = result
                         start = l

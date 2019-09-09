@@ -4,7 +4,10 @@ import tree_processor as tp
 import functools
 import re
 
+
 class LocationValidator(DataValidator):
+    # _loc and loc_ are in the list because some words can contain
+    # the substring loc in it, for example block
     ids_classes = [
         'loc_',
         '_loc',
@@ -20,15 +23,12 @@ class LocationValidator(DataValidator):
         'location'
     ]
 
-    def kill_check(self, node):
-        text = DataValidator.flatten_text(node.text)
-        if tp.number_of_words(text) > 10:
-            return True
-        if re.search('[\/?!]', text):
-            return True
-        return False
-
     def base_check(self, node):
+        text = DataValidator.flatten_text(node.text)
+        if tp.number_of_words(text) > 15:
+            return False
+        if re.search('[\/?!]', text):
+            return False
         # Checking the cases
         if DataValidator.contains_more_lower_than(node, (1.0/3.0)):
             return False
@@ -39,7 +39,7 @@ class LocationValidator(DataValidator):
             return True
         if tp.number_of_words(DataValidator.flatten_text(node.text)) <= 10:
             for word in LocationValidator.key_words:
-                reg = '(\s+|^)%s(\s+|:)' % word
+                reg = '(\s+|^)%s(\s+|:)\s*\S+' % word
                 if re.match(reg, DataValidator.flatten_text(node.text).lower()):
                     return True
         return False
@@ -76,8 +76,6 @@ class LocationValidator(DataValidator):
         # Condition 4: Contains less than 11 words
         if tp.number_of_words(text) <= 10:
             score += weights[3]
-
-
 
         return float(score) / float(max_value)
 

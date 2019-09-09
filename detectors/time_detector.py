@@ -12,9 +12,6 @@ class TimeValidator(DataValidator):
         'uhr',
     ]
 
-    def kill_check(self, node):
-        return False
-
     def base_check(self, node):
         text = DataValidator.flatten_text(node.text)
         found = False
@@ -33,7 +30,8 @@ class TimeValidator(DataValidator):
         # Preparations
         score = 0
         weights = [2, 3, 1]
-        max_value = functools.reduce((lambda x, y: x + y), weights)
+        # 1 gets subtracted because of the else statement
+        max_value = functools.reduce((lambda x, y: x + y), weights) - 1
         words = ['von', 'bis', 'ab', 'uhrzeit', 'um']
         
         # Condition 1: contains less than 16 words

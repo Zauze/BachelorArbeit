@@ -3,6 +3,7 @@ import errors.errors
 from detectors.data_detector import DataValidator
 from detectors.data_label import DataLabel
 
+
 class ShortDescExtractor(DataExtractor):
     """
     Extractor class for short descriptions

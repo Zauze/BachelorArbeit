@@ -8,11 +8,9 @@ import re
 class TitleValidator(DataValidator):
     hit_labels = [
         'headline',
-        'title'
+        'title',
+        'titel'
     ]
-
-    def kill_check(self, node):
-        return False
 
     def base_check(self, node):
         text = DataValidator.flatten_text(node.text)

@@ -18,7 +18,7 @@ class DateExtractor(DataExtractor):
         }
         # Finds date, which contains only numbers, like 21.07.19 or 21.07
         reg_number_date = r'(\s+|^)([0-3]?[0-9]{1})[.:\-\s]+(0[1-9]{1}|1[012])([.:\-\s]+(2[0-9]{3}|' \
-                          r'[0-1]{1}[0-9]{1})|\s+|$)'
+                          r'[0-2]{1}[0-9]{1})|\s+|$)'
         reg_full_month = r'(\s+|^)([012]{1}[1-9]{1}|[3]{1}[01]{1})[.:\-\s]+([a-zA-Z]+)(.+)'
 
         match_year = None
@@ -50,14 +50,11 @@ class DateExtractor(DataExtractor):
         if match_year is None:
             date_info['year'] = datetime.datetime.now().year
         elif len(match_year) == 2:
-            try:
                 date_info['year'] = '20' + match_year
-            except:
-                a = 10
         elif len(match_year) == 4:
             date_info['year'] = match_year
         else:
-            raise errors.errors.NotFoundError('The year was not found while date extraction')
+            date_info['year'] = None
 
         return date_info
 

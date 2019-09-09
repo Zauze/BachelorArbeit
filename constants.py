@@ -35,9 +35,11 @@ NOISE_TAGS = [
     'input',
     'img',
     'figure',
-    'form'
+    'picture',
+    'form',
+    'source',
+    'i'
 ]
-
 # Header tags
 HEADER = ['h', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header']
 
@@ -49,7 +51,10 @@ NOISE_IDS_CLASSES = [
     'cookie',
     'navigation',
     '_nav',
-    'pre-headline'
+    'pre-headline',
+    'dropdown',
+    'button',
+    r'(^|\s+)btn(\s+|$)'    # those denote buttons
 ]
 
 # Region depths

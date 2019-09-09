@@ -12,12 +12,12 @@ class LongDescExtractor(de.DataExtractor):
         detailed_page = data_region_identifier.process_link(link)
         if detailed_page is None:
             return {
-                'long_desc': None
+                'long_description': None
             }
         main_text_list = data_region_identifier.main_text_extraction(detailed_page)
         text = ""
         for el in main_text_list:
             text += el.get_full_text()
         return {
-            'long_desc': text
+            'long_description': text
         }

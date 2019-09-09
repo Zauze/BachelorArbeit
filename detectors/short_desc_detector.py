@@ -11,23 +11,20 @@ class ShortDescValidator(DataValidator):
         'beschreibung',
     ]
 
-    def kill_check(self, node):
-        if DataValidator.in_class_ids(node, ShortDescValidator.ids_and_classes):
-            return False
+    def base_check(self, node):
         text = DataValidator.flatten_text(node.text)
         if tp.number_of_words(text) < 3:
-            return True
+            return False
         for child in node.get_children():
-            if child.has_tag('div') or child.has_tag('span'):
-                return True
-        return False
+            if child.has_tag('div') or child.has_tag('span') or child.has_tag('td'):
+                return False
 
-    def base_check(self, node):
         found = False
-        for tag in ['span', 'div']:
-            if node.has_tag(tag):
+        # TODO: what's about tables?
+        for tag in ['span', 'div', 'td']:
+            if node.type == tag:
                 found = True
-        if tp.number_of_words(DataValidator.flatten_text(node.text)) > 15:
+        if tp.number_of_words(text) >= 15:
             found = True
         return found
 

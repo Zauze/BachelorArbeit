@@ -106,7 +106,7 @@ def run_node_detection(node, n, label_dict):
                 node.data_container['label']['not'].append(obj.get_label())
     if node.parent is not None:
         # Because those types are formatting areas of webpages
-        if node.type in ['div', 'td', 'tr']:
+        if node.type in ['div', 'td', 'tr', 'tbody', 'table']:
             run_node_detection(node.parent, n + 1, label_dict)
         elif node.type in FORMAT_TAGS or tp.number_of_words(node.get_pure_text()) > 0:
             run_node_detection(node.parent, n, label_dict)
@@ -144,9 +144,6 @@ def process_data_regions(data_regions):
         else:
             if count_hits(label_dict) > count_hits(main_region.data_container['label_dict']):
                 main_region = region
-            elif count_hits(label_dict) == count_hits(main_region.data_container['label_dict']):
-                main_region.children += region.children
-                # merge_data_regions(main_region, region)
     # No hits found in any region
     if main_region is None:
         regions_list = get_main_region_by_points(data_regions)
@@ -241,6 +238,16 @@ def process_hits(label_dict):
             remove_list = []
             for node in label_dict[label]['hits']:
                 if node.parent in label_dict[label]['hits']:
+                    remove_list.append(node)
+            for el in remove_list:
+                label_dict[label]['hits'].remove(el)
+            remove_list = []
+            for node in label_dict[label]['hits']:
+                count = 0
+                for child in node.get_children():
+                    if child.type not in FORMAT_TAGS:
+                        count += 1
+                if count >= 3:
                     remove_list.append(node)
             for el in remove_list:
                 label_dict[label]['hits'].remove(el)

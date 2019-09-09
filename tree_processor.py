@@ -63,11 +63,7 @@ def content_similarity(node1, node2):
     if not node1.is_leaf() or not node2.is_leaf():
         return 0.0
     else:
-        start = datetime.datetime.now()
         cs = lcs(node1.get_pure_text(), node2.get_pure_text())
-        end = datetime.datetime.now()
-        diff =  end - start
-        print(str(diff))
         w = number_of_words(cs)
         m = max(
             number_of_words(node1.text),
@@ -130,7 +126,7 @@ def get_max_string(tree1, tree2):
     return ret
 
 
-def tree_alignment(tree_one, tree_two, calculate_estm = False, string_function=get_max_string):
+def create_matched_tree(tree_one, tree_two, calculate_estm = False, string_function=get_max_string):
     """
     Computes the intersection of two trees
     :param HTMLNode tree_one:
@@ -174,7 +170,7 @@ def tree_alignment(tree_one, tree_two, calculate_estm = False, string_function=g
     children = []
     for pair in alignments:
         # Performs alignments
-        alignment = tree_alignment(pair[0], pair[1])
+        alignment = create_matched_tree(pair[0], pair[1])
         if alignment is not None:
             children.append(alignment)
     # Aligns strings using the specific string alignment function provided
@@ -313,7 +309,7 @@ def tree_structure_points(node, n=0):
     return score
 
 
-def normalized_tree_distance(tree1, tree2, artificial_root=False):
+def modified_norm_tree_dist(tree1, tree2, artificial_root=False):
     """
     Calculating the normalized tree distance of tree1 and tree2
     :param HTMLNode tree1:
@@ -326,7 +322,7 @@ def normalized_tree_distance(tree1, tree2, artificial_root=False):
     """
     tree1.update()
     tree2.update()
-    aligned_tree = tree_alignment(tree1, tree2)
+    aligned_tree = create_matched_tree(tree1, tree2)
     if artificial_root:
         if aligned_tree.is_leaf():
             return 1.0
