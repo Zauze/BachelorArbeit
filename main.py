@@ -53,19 +53,13 @@ short desc struggles because if not given the organizer is marked as short desc
 otherwise there are two labeled nodes containing the keyword 'description' and the
 first is just the pseudo-button with "Mehr informationen"
 
+https://veranstaltungen.wasserburg.de/wasserburg-a-inn/
+NEEDS TO BE LOADED VIA HTML FILE
+location takes only the city name (not the whole loaction)
+short desc takes too much information
 
 
 """
-
-
-# salem
-# working: ebersberg, bermatingen, allgäu, tvkempten, salem, grafing, herrsching, tettnang
-# not-working: grafing, salem
-
-# wasserburg hat nicht alle Informationen (zB location fehlen ein paar)
-
-
-
 main = Flask(__name__)
 
 # Creating the logger
