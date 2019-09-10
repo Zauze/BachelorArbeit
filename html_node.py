@@ -203,7 +203,7 @@ class HTMLNode:
                 remove_list.append(child)
         self.remove_children(remove_list)
         for child in self.get_children():
-            child.remove_id(bad_class)
+            child.remove_class(bad_class)
 
     def find_id(self, iden):
         """

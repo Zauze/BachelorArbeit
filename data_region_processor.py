@@ -8,6 +8,7 @@ from detectors.short_desc_detector import *
 from detectors.title_detector import *
 from detectors.link_detector import *
 from constants import *
+import constants
 """
 Module for data region validation and processing
 """
@@ -150,8 +151,8 @@ def process_data_regions(data_regions):
         if len(regions_list) == 1:
             main_region = regions_list[0]
         elif len(regions_list) == 0:
-            logger.error("No regions where found, quitting...")
-            exit(0)
+            constants.logger.error("No regions where found, quitting...")
+            return None
         else:
             # Creating a merged data_region
             main_region = regions_list[0]
@@ -237,17 +238,17 @@ def process_hits(label_dict):
         if len(label_dict[label]['hits']) > 1:
             remove_list = []
             for node in label_dict[label]['hits']:
-                if node.parent in label_dict[label]['hits']:
-                    remove_list.append(node)
-            for el in remove_list:
-                label_dict[label]['hits'].remove(el)
-            remove_list = []
-            for node in label_dict[label]['hits']:
                 count = 0
                 for child in node.get_children():
                     if child.type not in FORMAT_TAGS:
                         count += 1
                 if count >= 3:
+                    remove_list.append(node)
+            for el in remove_list:
+                label_dict[label]['hits'].remove(el)
+            remove_list = []
+            for node in label_dict[label]['hits']:
+                if node.parent in label_dict[label]['hits']:
                     remove_list.append(node)
             for el in remove_list:
                 label_dict[label]['hits'].remove(el)

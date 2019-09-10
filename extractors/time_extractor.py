@@ -8,7 +8,6 @@ class TimeExtractor(DataExtractor):
     """
     Extractor class to extract time
     """
-    # TODO: 09.01.2019 09:20 Uhr - 12.11.2019 12:12 Uhr is not functioning properly!
     def extract(self, node):
         """
         Actual extraction function
@@ -22,7 +21,7 @@ class TimeExtractor(DataExtractor):
         }
         # Those regex are very strict, no checks needed when extracting
         # Matches strings like 19:15, 12:00, 09:23
-        reg_full_time = r'(\s+|^)(([0-1]{1}[0-9]{1}|2[0-4]{1})[:]+([0-5]{1}[0-9]{1}))(\s+|$)'
+        reg_full_time = r'(\s+|^)(([0-1]?[0-9]{1}|2[0-4]{1})[:]+([0-5]{1}[0-9]{1}))(\s+|$)'
         # Matches strings like 18:12 uhr
         reg_part_time = r'(\s+|^)(0?[0-9]{1}|1[0-9]{1}|2[0-4]{1})([:](0[0-9]{1}|[1-5]{1}[0-9]{1})|\s*)' \
                         r'\s+uhr'
@@ -68,6 +67,9 @@ class TimeExtractor(DataExtractor):
                                 return ret_info
                     except IndexError:
                         break
+        # Adding a leading zero if needed
+        if ret_info['hour'] is not None and len(ret_info['hour']) == 1:
+            ret_info['hour'] = '0%s' % ret_info['hour']
         return {
             'time': ("%s:%s" % (ret_info['hour'], ret_info['minutes']))
         }

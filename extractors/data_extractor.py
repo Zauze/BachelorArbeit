@@ -28,7 +28,7 @@ class DataExtractor:
 
                 # Getting the node for the extractor
                 # if there is a hit
-                if len(label_dict[label]['hits']) == 1:
+                if len(label_dict[label]['hits']) >= 1:
                     specific_info = extractor.extract(label_dict[label]['hits'][0])
                 # else the element with the highest score
                 elif len(label_dict[label]['scores']) >= 1:

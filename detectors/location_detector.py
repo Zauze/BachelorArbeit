@@ -65,7 +65,7 @@ class LocationValidator(DataValidator):
         # Somestreet 12, Somestreet 12a
         # but not:
         # Somestreet 12sometextwithoutanywhitespace
-        if re.search('([a-zA-Z]+\s+[0-9]{1,3}\w?\s+|[a-zA-Z]+\s+[0-9]{1,3}\w?$)', text) is not None:
+        if re.search('([A-Z]{1}[a-z]+\s+[0-9]{1,3}\w?\s+|[A-Z]{1}[a-z]+\s+[0-9]{1,3}\w?$)', text) is not None:
             score += weights[1]
 
         # Condition 3: Contains postal code(Germany)
