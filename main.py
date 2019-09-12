@@ -76,8 +76,8 @@ constants.logger = logger
 def run():
     website = request.args.get('url')
     html_file = request.args.get('html')
-    out_file = request.args.get('file')
-    logger.info("Starting Data Extractor with the url: %s the html file: %s and output file: %s" % (website, html_file, out_file))
+    out_path = request.args.get('file')
+    logger.info("Starting Data Extractor with the url: %s the html file: %s and output file: %s" % (website, html_file, out_path))
     if website is None and html_file is None:
         # Showing help if no parameter is given
         logger.error("Not enough arguments provided - returning...")
@@ -165,14 +165,20 @@ def run():
     information_list = DataExtractor.extract_data_records(main_region)
 
     logger.debug("Saving information to file")
-    # Creating yaml file for storing
-    out_file = out_file or 'output.yaml'
-    open(out_file, 'w').close()
+    # Creating JSON file for storing if specified
+    if out_path is not None:
+        out_file = out_path + '.json'
+        try:
+            open(out_file, 'w').close()
 
-    # Dumping information into a JSON file
-    with open(out_file, 'w') as fd:
-        json.dump(information_list, fd)
-    return("Extracted information saved to %s" % (os.path.dirname(os.path.realpath(__file__)) + "/" + out_file))
+            # Dumping information into a JSON file
+            with open(out_file, 'w') as fd:
+                json.dump(information_list, fd)
+            logger.debig("Extracted information saved to %s" % (os.path.dirname(os.path.realpath(__file__)) + "/" + out_file))
+        except:
+            logger.error('Could not create JSON file with path %s' % out_path)
+
+    return json.dumps(information_list)
 
 
 if __name__ == "__main__":

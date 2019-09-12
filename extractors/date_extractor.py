@@ -56,8 +56,11 @@ class DateExtractor(DataExtractor):
         else:
             date_info['year'] = None
 
+        if date_info['year'] is None:
+            return {'startDate' : None}
+
         return {
-            'date': ("%s-%s-%s" % (date_info['year'], date_info['month'], date_info['day']))
+            'startDate': ("%s-%s-%s" % (date_info['year'], date_info['month'], date_info['day']))
         }
 
 

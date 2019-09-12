@@ -16,5 +16,5 @@ class TitleExtractor(DataExtractor):
 
         text = DataValidator.flatten_text(node.text)
         return {
-            'title': DataExtractor.remove_extra_whitespaces(text).strip()
+            'name': DataExtractor.remove_extra_whitespaces(text).strip()
         }

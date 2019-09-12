@@ -47,10 +47,15 @@ class DataExtractor:
                     info_dict.update(specific_info)
 
             # Long Description Extraction
-            if 'url' in info_dict and info_dict['url'] is not None:
+            if '@id' in info_dict and info_dict['@id'] is not None:
                 extractor = DataExtractor.class_lookup(DataLabel.LONG_DESC)()
-                specific_info = extractor.extract(info_dict['url'])
+                specific_info = extractor.extract(info_dict['@id'])
                 info_dict.update(specific_info)
+
+            # Adding some additional paramaters
+            info_dict['@context'] = 'http://schema.org'
+            info_dict['@type'] = 'Event'
+
             # Appending to the main information dict
             ret_list.append(info_dict)
         return ret_list

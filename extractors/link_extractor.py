@@ -8,9 +8,9 @@ class LinkExtractor(DataExtractor):
     def extract(self, node):
         if 'href' in node.attributes:
             return {
-                'url': node.attributes['href']
+                '@id': node.attributes['href']
             }
         else:
             return {
-                'url': None
+                '@id': None
             }

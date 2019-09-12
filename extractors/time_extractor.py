@@ -64,12 +64,14 @@ class TimeExtractor(DataExtractor):
                             if re.search(reg, prefix_words[-1*i], flags=re.IGNORECASE) is not None:
                                 ret_info['hour'] = item[2]
                                 ret_info['minutes'] = item[3]
-                                return ret_info
+                                break
                     except IndexError:
                         break
         # Adding a leading zero if needed
         if ret_info['hour'] is not None and len(ret_info['hour']) == 1:
             ret_info['hour'] = '0%s' % ret_info['hour']
+        else:
+            return {'doorTime': None}
         return {
-            'time': ("%s:%s" % (ret_info['hour'], ret_info['minutes']))
+            'doorTime': ("%s:%s" % (ret_info['hour'], ret_info['minutes']))
         }
