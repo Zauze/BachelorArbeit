@@ -260,7 +260,8 @@ def check_paths(main_region, label):
     hits or scores and check for similarities. The combination of path and label
     which is the highest for each label will be granted with a score of 2 (therefore
     later will be prefered for extraction).
-    :param main_region:
+    :param HTMLNode main_region:
+    :param detectors.DataLabel label
     :return: None
     """
     paths = dict()

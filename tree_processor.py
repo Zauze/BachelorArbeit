@@ -1,11 +1,7 @@
 from numpy import *
 import numpy as numpy
 import re
-import sys
 import copy
-import logging
-import datetime
-from copy import deepcopy
 
 
 def number_of_words(text):
@@ -17,28 +13,14 @@ def number_of_words(text):
     return len(re.findall('[^\s]+', text))
 
 
-def lcs(text1, text2, sequence = ''):
+def lcs(text1, text2):
     """
     Longest common subsequence algorithm
     :param str text1:
     :param str text2:
-    :param str sequence: previously found longest sequence
     :return: str : longest common sub sequence
     """
-    """
-    check = ''
-    for i in range(len(text1)):
-        check += text1[i]
-        if check in text2:
-            if len(check) > len(sequence):
-                sequence = check
-        else:
-            break
-    if len(sequence) > len(text1) - 1:
-        return sequence
-    else:
-        return lcs(text1[1:len(text1)], text2, sequence)
-    """
+    sequence = ''
     for start in range(len(text1)):
         check = ''
         for i in range(start, len(text1)):
@@ -94,6 +76,8 @@ def estm(node1, node2):
     else:
         matrix = numpy.zeros((m + 1,n + 1))
         wmatrix = numpy.zeros((m,n))
+        # This is the main calculation of the estm algorithm
+        # this code is derived from Zhai & Liu (2006)
         for i in range(1, m + 1):
             for j in range(1, n + 1):
                 wmatrix[i-1][j-1] = estm(node1.get_children()[i-1], node2.get_children()[j-1])
@@ -108,6 +92,7 @@ def estm(node1, node2):
         if 'm_matrices' not in node1.data_container:
             node1.data_container['m_matrices'] = {}
 
+        # Saving calculations
         node1.data_container['weight_matrices'][node2.identification] = wmatrix
         node1.data_container['m_matrices'][node2.identification] = matrix
 
@@ -115,6 +100,12 @@ def estm(node1, node2):
 
 
 def get_max_string(tree1, tree2):
+    """
+    Returns the bigger string of the two trees provided
+    :param HTMLNode tree1:
+    :param HTMLNode tree2:
+    :return: str
+    """
     if number_of_words(tree1.get_pure_text()) > number_of_words(tree2.get_pure_text()):
         tmp = tree1.children
     else:
@@ -133,10 +124,13 @@ def create_matched_tree(tree_one, tree_two, calculate_estm = False, string_funct
     :param HTMLNode tree_two:
     :param bool calculate_estm: Calculates the score for enhanced simple
                                 tree matching algorithm if set to True
+    :param function string_function:
     :return: HTMLNode : the aligned tree
     """
     tree1 = copy.copy(tree_one)
     tree2 = copy.copy(tree_two)
+    # Return None, if the both trees have different
+    # tags or classes
     if tree1.type != tree2.type:
         return None
     if 'class' in tree1.attributes and 'class' in tree2.attributes:
@@ -145,8 +139,14 @@ def create_matched_tree(tree_one, tree_two, calculate_estm = False, string_funct
     if ('class' not in tree1.attributes and 'class' in tree2.attributes) \
         or ('class' in tree1.attributes and 'class' not in tree2.attributes):
         return None
+
+    # If both trees are leaf nodes
     if len(tree1.get_children()) == 0 and len(tree2.get_children()) == 0:
         return tree1
+
+    # If one of the trees is a leaf node, it makes no difference which node
+    # to return because both nodes are equal, as long as children are removed
+    # if any
     if len(tree1.get_children()) == 0 or len(tree2.get_children()) == 0:
         tree1.parent = None
         tree1.children = []
@@ -156,6 +156,7 @@ def create_matched_tree(tree_one, tree_two, calculate_estm = False, string_funct
     m = len(tree1.get_children())
     n = len(tree2.get_children())
 
+    # Checking if calculation is already saved
     if 'weight_matrices' in tree1.data_container \
             and tree2.identification in tree1.data_container['weight_matrices'] \
             and not calculate_estm:
@@ -197,8 +198,8 @@ def assign_alignment(children1, children2, wmatrix):
     # numbers in the wmatrix.
     # To find the best choices of children,
     # the algorithm will be oriented on the tree with lesser children
-    # else if both children size is equal, the tree is regarded main, which
-    # has a higher count of maximum coordinates
+    # else if both children size are equal, the tree, which
+    # has a higher count of maximum coordinates is oriented on
     if m < n:
         indices = numpy.argmax(wmatrix, axis=1)
         for i in range(m):
@@ -254,7 +255,7 @@ def assign_alignment(children1, children2, wmatrix):
 
 def terminal(tree, count_pictures=True):
     """
-    Counts terminals (text nodes) of the subtree which root is param tree
+    Counts terminals (text nodes) of the subtree which root is tree
     :param HTMLNode tree: root
     :param bool count_pictures: If True counts pictures as terminals
     :return: int : amount of terminals
@@ -327,6 +328,7 @@ def modified_norm_tree_dist(tree1, tree2, artificial_root=False):
             return 1.0
     aligned_tree.compute_text()
     # Computing scores for aligned tree and the two given trees
+    # T2 is substracted, because the root node is artificial
     aligned_score = tree_structure_points(aligned_tree, 1) - 2
     max_score = max(tree_structure_points(tree1, 1) - 2, tree_structure_points(tree2, 1) - 2)
     if max_score == 0:

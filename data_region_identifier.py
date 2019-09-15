@@ -41,6 +41,7 @@ def combined_compare(parent, k):
                         if 'distances' in parent.data_container:
                             if key in parent.data_container['distances'][i]:
                                 continue
+                        # Creating artificial root nodes
                         parent1 = html_node.HTMLNode('div', {}, None, 0)
                         parent2 = html_node.HTMLNode('div', {}, None, 0)
                         parent1.children = parent.truncate_children(start-1, l-1)

@@ -67,4 +67,9 @@ class DataValidator:
 
     @staticmethod
     def flatten_text(text):
+        """
+        Removes all tag parenthesis from string
+        :param str text:
+        :return: str
+        """
         return re.sub('<\/?[^<>]+>', '', text)

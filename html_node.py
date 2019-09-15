@@ -15,6 +15,7 @@ class HTMLNode:
     and additionally provide a data container to save operations
     done on this node (like distance calculations)
     """
+    # This variable is used to give every created node an unique id
     id = 0
 
     @staticmethod
@@ -22,7 +23,7 @@ class HTMLNode:
         """
         Function to assign an identification number
         to each creates node, for simpler search and extraction
-        :return: None
+        :return: int
         """
         id_copy = HTMLNode.id
         HTMLNode.id += 1
@@ -128,6 +129,10 @@ class HTMLNode:
             self.children.remove(children)
 
     def get_pure_text(self):
+        """
+        Returns the text of the current node and not its subtree
+        :return: str
+        """
         pure_text = ""
         for child in self.children:
             if isinstance(child, str):
